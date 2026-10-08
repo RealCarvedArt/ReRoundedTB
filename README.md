@@ -28,13 +28,13 @@ The preview at the top of the settings window shows your taskbar's segments. Cli
 Without dynamic mode, the whole taskbar is a single segment.
 
 ### Advanced options
-- **Dynamic mode (Windows 11)** - shrinks the taskbar to fit its icons, a bit like a dock. The app list and the system tray become separate segments, plus the widgets area on the far left when the taskbar is centred. Each segment has its own corner radius and margins.
+- **Dynamic mode (Windows 11)** - shrinks the taskbar to fit its icons, a bit like a dock. The app list and the system tray become separate segments. When the taskbar is centred, there's also a widgets segment on the far left, where Windows puts its Widgets button; it's only useful if Widgets is turned on in Windows' taskbar settings. Each segment has its own corner radius and margins.
 - **Show this segment** - shown when the tray or widgets segment is selected; shows or hides that segment in dynamic mode. Press <kbd>Win</kbd>+<kbd>F2</kbd> at any time to toggle the tray.
 - **Show segments only when hovered over with the mouse** - shows the tray and widgets segments only while the mouse is over them. This uses more CPU.
 - **When a window is maximised, restore the taskbar** - turns the taskbar back to normal on any monitor with a maximised window.
 - **When alt+tab or win+tab is pressed, restore the taskbar (Windows 11)** - does the same while the task switcher is open. Needs the option above.
 - **Improve compatibility with TranslucentTB and other mods** - lets ReRoundedTB work alongside [TranslucentTB](https://github.com/TranslucentTB/TranslucentTB). Due to a bug in Windows, apps that change the taskbar's composition stop ReRoundedTB's changes from showing up; this asks TranslucentTB to refresh the taskbar after each change. It may flicker slightly. It was built for TranslucentTB 2021.5; newer versions haven't been tested.
-- **Auto-hide** - "Always hide" fades the taskbar out until the mouse reaches the bottom of the screen. This is ReRoundedTB's own auto-hide and is experimental. Keep Windows' own taskbar auto-hide turned off.
+- **Auto-hide** - "Always show" is the default. "Always hide" fades the taskbar out until the mouse reaches the bottom of the screen. This is ReRoundedTB's own auto-hide and is experimental. Keep Windows' own taskbar auto-hide turned off.
 
 ### Tray menu
 - **Run at startup** - starts ReRoundedTB when you sign in.
