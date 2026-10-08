@@ -100,7 +100,8 @@ namespace RoundedTB
                         LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
                         LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
 
-                        if (windowClass.ToString().Contains("HwndWrapper[RoundedTB.exe") && windowTitle.ToString() == "RoundedTB")
+                        // .NET Framework builds use "HwndWrapper[RoundedTB.exe;;...", .NET 6+ builds "HwndWrapper[RoundedTB;;..."
+                        if (windowClass.ToString().Contains("HwndWrapper[RoundedTB") && windowTitle.ToString() == "RoundedTB")
                         {
                             LocalPInvoke.SetWindowText(hwnd, "RoundedTB_SettingsRequest");
                         }
@@ -193,6 +194,15 @@ namespace RoundedTB
                 }
             }
             activeSettings.IsWindows11 = isWindows11;
+
+            // Configs from R3.1 and earlier have no per-segment layouts, which deserialise as null and crash startup; fill any missing ones with defaults
+            Types.SegmentSettings DefaultLayout() => isWindows11
+                ? new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 }
+                : new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 };
+            activeSettings.SimpleTaskbarLayout ??= DefaultLayout();
+            activeSettings.DynamicAppListLayout ??= DefaultLayout();
+            activeSettings.DynamicTrayLayout ??= DefaultLayout();
+            activeSettings.DynamicWidgetsLayout ??= DefaultLayout();
 
             if (version != activeSettings.Version && version != -1)
             {

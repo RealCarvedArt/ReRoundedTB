@@ -55,7 +55,7 @@ namespace RoundedTB
                                     LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
                                     LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
 
-                                    if (windowClass.ToString().Contains("HwndWrapper[RoundedTB.exe") && windowTitle.ToString() == "RoundedTB_SettingsRequest")
+                                    if (windowClass.ToString().Contains("HwndWrapper[RoundedTB") && windowTitle.ToString() == "RoundedTB_SettingsRequest")
                                     {
                                         mw.Dispatcher.Invoke(() =>
                                         {

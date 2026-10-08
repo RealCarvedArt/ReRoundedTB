@@ -10,6 +10,8 @@ using System.Windows;
 using System.Windows.Threading;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
+using System.Collections.Concurrent;
+using System.Windows.Automation;
 
 
 
@@ -17,6 +19,90 @@ namespace RoundedTB
 {
     class Taskbar
     {
+        private static readonly bool isWindows11 = Environment.OSVersion.Version.Build >= 21996;
+        private static readonly ConcurrentDictionary<IntPtr, AutomationElement> taskbarFrames = new ConcurrentDictionary<IntPtr, AutomationElement>();
+
+        /// <summary>
+        /// Gets the rect of the taskbar's app buttons. On recent Windows 11 builds the legacy MSTaskSwWClass window no longer tracks the
+        /// XAML taskbar's icons, so the real buttons are measured via UI Automation, falling back to the legacy window's rect.
+        /// </summary>
+        /// <returns>
+        /// the bounding rect of the app buttons.
+        /// </returns>
+        public static LocalPInvoke.RECT GetAppListRect(IntPtr taskbarHwnd, IntPtr appListHwnd)
+        {
+            if (isWindows11 && TryGetXamlAppListRect(taskbarHwnd, out LocalPInvoke.RECT xamlRect))
+            {
+                return xamlRect;
+            }
+            LocalPInvoke.GetWindowRect(appListHwnd, out LocalPInvoke.RECT appListRect);
+            return appListRect;
+        }
+
+        private static bool TryGetXamlAppListRect(IntPtr taskbarHwnd, out LocalPInvoke.RECT rect)
+        {
+            rect = new LocalPInvoke.RECT();
+            try
+            {
+                if (!taskbarFrames.TryGetValue(taskbarHwnd, out AutomationElement frame))
+                {
+                    frame = AutomationElement.FromHandle(taskbarHwnd).FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, "TaskbarFrame"));
+                    if (frame == null)
+                    {
+                        return false;
+                    }
+                    taskbarFrames[taskbarHwnd] = frame;
+                }
+
+                // Fetch all the properties we need in one cross-process call, as this runs every loop
+                CacheRequest cacheRequest = new CacheRequest();
+                cacheRequest.Add(AutomationElement.ClassNameProperty);
+                cacheRequest.Add(AutomationElement.AutomationIdProperty);
+                cacheRequest.Add(AutomationElement.BoundingRectangleProperty);
+                cacheRequest.Add(AutomationElement.IsOffscreenProperty);
+                AutomationElementCollection children;
+                using (cacheRequest.Activate())
+                {
+                    children = frame.FindAll(TreeScope.Children, System.Windows.Automation.Condition.TrueCondition);
+                }
+
+                double left = double.MaxValue, top = double.MaxValue, right = double.MinValue, bottom = double.MinValue;
+                foreach (AutomationElement child in children)
+                {
+                    Rect bounds = child.Cached.BoundingRectangle;
+                    string className = child.Cached.ClassName;
+                    // The tray and widgets are separate segments, and the images are tray glyphs
+                    if (className.StartsWith("SystemTray.") || className == "Image" || child.Cached.AutomationId == "WidgetsButton" || child.Cached.IsOffscreen || bounds.IsEmpty || bounds.Width <= 0)
+                    {
+                        continue;
+                    }
+                    left = Math.Min(left, bounds.Left);
+                    top = Math.Min(top, bounds.Top);
+                    right = Math.Max(right, bounds.Right);
+                    bottom = Math.Max(bottom, bounds.Bottom);
+                }
+
+                if (left == double.MaxValue)
+                {
+                    return false;
+                }
+                rect = new LocalPInvoke.RECT
+                {
+                    Left = (int)Math.Floor(left),
+                    Top = (int)Math.Floor(top),
+                    Right = (int)Math.Ceiling(right),
+                    Bottom = (int)Math.Ceiling(bottom)
+                };
+                return true;
+            }
+            catch (Exception)
+            {
+                // The cached frame dies when Explorer restarts; drop it so it's looked up again
+                taskbarFrames.TryRemove(taskbarHwnd, out _);
+                return false;
+            }
+        }
+
         /// <summary>
         /// Checks if the taskbar is centred.
         /// </summary>
@@ -121,7 +207,7 @@ namespace RoundedTB
         {
             LocalPInvoke.GetWindowRect(taskbarHwnd, out LocalPInvoke.RECT taskbarRectCheck);
             LocalPInvoke.GetWindowRect(trayHwnd, out LocalPInvoke.RECT trayRectCheck);
-            LocalPInvoke.GetWindowRect(appListHwnd, out LocalPInvoke.RECT appListRectCheck);
+            LocalPInvoke.RECT appListRectCheck = GetAppListRect(taskbarHwnd, appListHwnd);
 
             return new Types.Taskbar()
             {
@@ -444,7 +530,7 @@ namespace RoundedTB
             IntPtr hwndTray = LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "TrayNotifyWnd", null); // Get handle to the main taskbar's tray
             LocalPInvoke.GetWindowRect(hwndTray, out LocalPInvoke.RECT rectTray); // Get the RECT for the main taskbar's tray
             IntPtr hwndAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndMain, IntPtr.Zero, "ReBarWindow32", null), IntPtr.Zero, "MSTaskSwWClass", null); // Get the handle to the main taskbar's app list
-            LocalPInvoke.GetWindowRect(hwndAppList, out LocalPInvoke.RECT rectAppList);// Get the RECT for the main taskbar's app list
+            LocalPInvoke.RECT rectAppList = GetAppListRect(hwndMain, hwndAppList); // Get the RECT for the main taskbar's app list
 
             retVal.Add(new Types.Taskbar
             {
@@ -497,7 +583,7 @@ namespace RoundedTB
                     }
                     LocalPInvoke.GetWindowRect(hwndSecTray, out LocalPInvoke.RECT rectSecTray); // Get the RECT for this secondary taskbar's tray
                     IntPtr hwndSecAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "WorkerW", null), IntPtr.Zero, "MSTaskListWClass", null); // Get the handle to the main taskbar's app list
-                    LocalPInvoke.GetWindowRect(hwndSecAppList, out LocalPInvoke.RECT rectSecAppList);// Get the RECT for this secondary taskbar's app list
+                    LocalPInvoke.RECT rectSecAppList = GetAppListRect(hwndCurrent, hwndSecAppList); // Get the RECT for this secondary taskbar's app list
                     retVal.Add(new Types.Taskbar
                     {
                         TaskbarHwnd = hwndCurrent,
