@@ -33,95 +33,92 @@
 
         <ScrollViewer Margin="0,176,0,0" VerticalScrollBarVisibility="Hidden" Height="378" VerticalAlignment="Top">
             <StackPanel Width="473">
-                <Expander x:Name="expander0" HorizontalAlignment="Center" Header="What's new" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
+                <Expander x:Name="expander0" Header="What's new" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
-                        <TextBlock Margin="0,5,0,0" x:Name="bodyBlock0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">            
-                    • Nobody knows. Some say secrets lie amongst these builds. And bugs. Honestly, I'm pretty sure they're 90% bug. 95%. 98%. Actually the fact you're even seeing this text is probably a bug. idk tbh, i give up
+                        <TextBlock Margin="0,5,0,0" x:Name="bodyBlock0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
+                    <Bold>• New name:</Bold> RoundedTB is now ReRoundedTB, a maintained fork. Your settings carry over.
                     <LineBreak/>
-                    <Bold>REMINDER: Autohide is currently rather buggy and must be entirely disabled in Windows.</Bold>
+                    <Bold>• Dynamic mode fixed on current Windows 11:</Bold> the taskbar resizes to fit all its icons again, on every monitor.
                     <LineBreak/>
+                    <Bold>• Stability:</Bold> fixes for the taskbar going square over time, the app silently stopping, and taskbars not being reshaped after Explorer restarts.
+                    <LineBreak/>
+                    <Bold>• Runs on .NET 10</Bold>, with known-vulnerable and unused components removed.
+                    <LineBreak/>
+                    <Bold>• Closing the settings window</Bold> hides ReRoundedTB to the tray; left-click the tray icon to reopen it.
                         </TextBlock>
                     </Grid>
                 </Expander>
-                <Expander x:Name="expander1" HorizontalAlignment="Center" Header="About basic options" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
+                <Expander x:Name="expander1" Header="About basic options" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock1" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
-                    <Bold>• Margin</Bold> - makes the taskbar slimmer on all sides by this many logical pixels.
+                    <Bold>• Taskbar segments</Bold> - click a segment in the preview to edit it. Without dynamic mode the whole taskbar is one segment.
                     <LineBreak/>
-                    <Bold>• Corner radius</Bold> - controls the radius of the taskbar's rounded corners.
+                    <Bold>• Corner radius</Bold> - how rounded the selected segment's corners are.
                     <LineBreak/>
-                    <Bold>• Advanced</Bold> - toggles a menu of advanced and experimental features.
+                    <Bold>• Top, bottom, left and right margin</Bold> - how many pixels to trim from each side of the selected segment. The trimmed area is see-through and click-through.
                     <LineBreak/>
-                    <Bold>• Apply</Bold> - applies and saves any unset changes.
+                    <Bold>• Apply</Bold> - applies and saves your changes.
                     <LineBreak/>
+                    <Bold>• Help</Bold> - opens this window.
                         </TextBlock>
                     </Grid>
                 </Expander>
-                <Expander x:Name="expander2" HorizontalAlignment="Center" Header="About advanced options" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
+                <Expander x:Name="expander2" Header="About advanced options" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock2" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
-                    <Bold>• [...] Margins</Bold> - individually sets the margin for each side of the taskbar.
+                    <Bold>• Dynamic mode (Windows 11)</Bold> - shrinks the taskbar to fit its icons, like a dock. The app list, the system tray and, when the taskbar is centred, the widgets area become separate segments.
                     <LineBreak/>
-                    <Bold>• Dynamic mode (Windows 11)</Bold> - Dynamically adjusts the size of the taskbar depending on how many apps are open.
+                    <Bold>• Split mode (Windows 10)</Bold> - separates the taskbar from the system tray so you can resize it by hand. It needs some setup; turn it on for instructions.
                     <LineBreak/>
-                    <Bold>• Split mode (Windows 10)</Bold> - allows you to resize the taskbar. Like dynamic mode, but manually adjustable; some setup is required, enable for more info.
+                    <Bold>• Show this segment</Bold> - shows or hides the tray or widgets segment in dynamic mode. Press <Bold>Win+F2</Bold> at any time to toggle the tray.
                     <LineBreak/>
-                    <Bold>• Show system tray</Bold> - Displays the system tray in dynamic/split mode. This option can be toggled at any time by pressing <Bold>Win+F2</Bold>.
+                    <Bold>• Show segments only when hovered</Bold> - shows the tray and widgets segments only while the mouse is over them. This uses more CPU.
                     <LineBreak/>
-                    <Bold>• Show system tray on hover</Bold> - Displays the system tray in dynamic/split mode when the mouse hovers over it. This overrides the above option.
+                    <Bold>• Restore the taskbar when a window is maximised</Bold> - turns the taskbar back to normal on a monitor with a maximised window.
                     <LineBreak/>
-                    <Bold>• TranslucentTB compatibility</Bold> - enables compatibility with TranslucentTB. For more info, enable this option.
+                    <Bold>• Restore the taskbar on alt+tab or win+tab (Windows 11)</Bold> - does the same while the task switcher is open.
                     <LineBreak/>
-                    <Bold>• Fill taskbar when maximised</Bold> - Fills the taskbar when a window is maximised on that taskbar's monitor.
+                    <Bold>• TranslucentTB compatibility</Bold> - lets ReRoundedTB work alongside TranslucentTB. It may flicker; turn it on for details.
                     <LineBreak/>
-                    <Bold>• Fill taskbar on alt+tab (Windows 11)</Bold> - Fills taskbars when alt+tab or the Task Switcher is invoked.
-                    <LineBreak/>
+                    <Bold>• Auto-hide</Bold> - "Always hide" fades the taskbar out until the mouse reaches the bottom of the screen. This is ReRoundedTB's own auto-hide and is experimental.
                         </TextBlock>
                     </Grid>
                 </Expander>
-                <Expander x:Name="expander3" HorizontalAlignment="Center" Header="Known issues" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
+                <Expander x:Name="expander3" Header="Known issues" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock3" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
-                    • Using ReRoundedTB with Windows' autohide feature can result in heavy flickering, bugs, an inability to access the taskbar and isn't supported.
+                    • Windows' own taskbar auto-hide setting isn't supported and can cause heavy flickering or an unreachable taskbar. Use ReRoundedTB's Auto-hide option instead.
                     <LineBreak/>
-                    • Dynamic mode and split mode only work correctly when the taskbar is at the top or bottom of the monitor.
+                    • Rounded corners aren't antialiased, due to a Windows limitation.
                     <LineBreak/>
-                    • Split mode on Windows 10 is currently only supported on the primary monitor.
+                    • Dynamic mode and split mode only work when the taskbar is at the top or bottom of the screen.
                     <LineBreak/>
-                    • Taskbar mods other than TranslucentTB are not yet officially supported. Let me know if you run into compatibility issues with other taskbar mods/tweaks.
+                    • Split mode only works on the primary monitor. Windows 10 support comes from RoundedTB and hasn't been tested in ReRoundedTB.
                     <LineBreak/>
-                    • When using dynamic mode, the taskbar may occasionally become too large, too small or not update. This can usually be fixed by moving a window to or from that monitor or briefly changing the taskbar alignment. These issues will be reduced in upcoming updates.
-                        <LineBreak/>
+                    • Taskbar mods other than TranslucentTB may conflict with ReRoundedTB.
+                    <LineBreak/>
+                    • In dynamic mode the taskbar can occasionally end up the wrong size. Opening or moving a window on that monitor usually corrects it.
                         </TextBlock>
                     </Grid>
                 </Expander>
-                <Expander x:Name="expander4" HorizontalAlignment="Center" Header="Help and information" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
+                <Expander x:Name="expander4" Header="Help and information" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock4" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="21">
-                    • More in-depth instructions, tips and tricks are available in the 
-                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB#readme" RequestNavigate="Hyperlink_RequestNavigate">
-                        README
-                    </Hyperlink>.
+                    • Instructions, tips and troubleshooting are in the
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB#readme" RequestNavigate="Hyperlink_RequestNavigate">README</Hyperlink>.
                     <LineBreak/>
-
                     • To browse the source code or download the latest release, visit
-                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB" RequestNavigate="Hyperlink_RequestNavigate">
-                        the ReRoundedTB GitHub repository
-                    </Hyperlink>.
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB" RequestNavigate="Hyperlink_RequestNavigate">the ReRoundedTB GitHub repository</Hyperlink>.
                     <LineBreak/>
                     <LineBreak/>
-                    ReRoundedTB is a fork of <Hyperlink NavigateUri="https://github.com/torchgm/RoundedTB" RequestNavigate="Hyperlink_RequestNavigate">RoundedTB</Hyperlink> by torchgm, and is licensed under the 
-                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB/blob/master/LICENSE" RequestNavigate="Hyperlink_RequestNavigate">
-                        GNU General Public License v3.0
-                    </Hyperlink>. By using the software, you agree to accepting the terms of this license.
-                    <LineBreak/>
+                    ReRoundedTB is a fork of <Hyperlink NavigateUri="https://github.com/torchgm/RoundedTB" RequestNavigate="Hyperlink_RequestNavigate">RoundedTB</Hyperlink> by torchgm. It is free software under the
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB/blob/master/LICENSE" RequestNavigate="Hyperlink_RequestNavigate">GNU General Public License v3.0</Hyperlink>, and comes with no warranty.
                         </TextBlock>
                     </Grid>
                 </Expander>
-                <Expander x:Name="expander5" HorizontalAlignment="Center" Header="Debug" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
+                <Expander x:Name="expander5" Header="Debug" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <StackPanel>
-                        <Button x:Name="configButton" Content="Open config file" Margin="0,10,0,0" Click="configButton_Click"/>
-                        <Button x:Name="logButton" Content="Open log file" Margin="0,10,0,0" Click="logButton_Click"/>
+                        <Button x:Name="configButton" Content="Open settings file" Margin="0,10,0,0" Click="configButton_Click"/>
                     </StackPanel>
                 </Expander>
             </StackPanel>

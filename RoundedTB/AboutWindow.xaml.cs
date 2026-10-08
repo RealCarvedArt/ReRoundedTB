@@ -43,11 +43,6 @@ namespace RoundedTB
             OpenWithShell(((MainWindow)Application.Current.MainWindow).configPath);
         }
 
-        private void logButton_Click(object sender, RoutedEventArgs e)
-        {
-            OpenWithShell(((MainWindow)Application.Current.MainWindow).logPath);
-        }
-
         // .NET Core defaults UseShellExecute to false, so Process.Start(url/file) throws instead of opening it
         private static void OpenWithShell(string target)
         {
