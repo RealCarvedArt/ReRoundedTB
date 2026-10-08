@@ -60,7 +60,7 @@ namespace RoundedTB
         public MainWindow()
         {
             InitializeComponent();
-            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Mica, updateAccents: false);
 
 
             // Check OS build, as behaviours rather-annoyingly differ between Windows 11 and Windows 10
