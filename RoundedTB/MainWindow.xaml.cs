@@ -8,9 +8,7 @@ using System.Windows;
 using System.Reflection;
 using System.Windows.Threading;
 using System.Windows.Interop;
-using DesktopBridge;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
 using System.Diagnostics;
 using Microsoft.Win32;
 using System.Text;
@@ -124,20 +122,9 @@ namespace RoundedTB
             }
             TrayIconCheck();
 
-            if (IsRunningAsUWP())
-            {
-                #pragma warning disable CS4014
-                StartupInit(true);
-                configPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.json");
-                logPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.log");
-            }
+            MigrateLegacyStartupShortcut();
 
-            if (!IsRunningAsUWP())
-            {
-                MigrateLegacyStartupShortcut();
-            }
-
-            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName)) && !IsRunningAsUWP())
+            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName)))
             {
                 StartupCheckBox.IsChecked = true;
                 ShowMenuItem.Header = "Show ReRoundedTB";
@@ -148,14 +135,7 @@ namespace RoundedTB
 
             // Load settings into memory/UI
             interaction.FileSystem();
-            if (!IsRunningAsUWP())
-            {
-                interaction.AddLog($"ReRoundedTB started!");
-            }
-            else
-            {
-                interaction.AddLog($"ReRoundedTB started in UWP mode!");
-            }
+            interaction.AddLog($"ReRoundedTB started!");
             activeSettings = interaction.ReadJSON();
 
             // Default settings
@@ -617,24 +597,16 @@ namespace RoundedTB
             }
         }
 
-        private async void Startup_Clicked(object sender, RoutedEventArgs e)
+        private void Startup_Clicked(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("Startup toggled");
-            if (IsRunningAsUWP())
+            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName)))
             {
-                await StartupToggle();
-                await StartupInit(false);
+                System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName));
             }
             else
             {
-                if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName)))
-                {
-                    System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName));
-                }
-                else
-                {
-                    EnableStartup();
-                }
+                EnableStartup();
             }
         }
 
@@ -690,112 +662,6 @@ namespace RoundedTB
             }
         }
 
-        async Task StartupToggle()
-        {
-            StartupTask startupTask = await StartupTask.GetAsync("RTB"); // Pass the task ID you specified in the appxmanifest file
-            switch (startupTask.State)
-            {
-                case StartupTaskState.Disabled:
-                    StartupTaskState newState = await startupTask.RequestEnableAsync();
-                    StartupCheckBox.IsEnabled = true;
-                    break;
-
-                case StartupTaskState.DisabledByUser:
-                    StartupCheckBox.IsEnabled = false;
-                    break;
-
-                case StartupTaskState.EnabledByPolicy:
-                    StartupCheckBox.IsEnabled = false;
-                    break;
-
-                case StartupTaskState.DisabledByPolicy:
-                    StartupCheckBox.IsEnabled = false;
-                    break;
-
-                case StartupTaskState.Enabled:
-                    startupTask.Disable();
-                    StartupCheckBox.IsEnabled = true;
-                    break;
-            }
-        }
-
-        async Task StartupInit(bool clean)
-        {
-            StartupTask startupTask = await StartupTask.GetAsync("RTB");
-            switch (startupTask.State)
-            {
-                case StartupTaskState.Disabled:
-                    StartupCheckBox.IsChecked = false;
-                    StartupCheckBox.IsEnabled = true;
-                    if (clean)
-                    {
-                        Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide ReRoundedTB";
-                    }
-                    StartupCheckBox.Content = "Run at startup";
-                    break;
-
-                case StartupTaskState.DisabledByUser:
-                    StartupCheckBox.IsChecked = false;
-                    StartupCheckBox.IsEnabled = false;
-                    if (clean)
-                    {
-                        Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide ReRoundedTB";
-                    }
-                    StartupCheckBox.Content = "Startup unavailable";
-                    break;
-
-                case StartupTaskState.EnabledByPolicy:
-                    StartupCheckBox.IsChecked = true;
-                    StartupCheckBox.IsEnabled = false;
-                    if (clean)
-                    {
-                        Visibility = Visibility.Hidden;
-                        ShowMenuItem.Header = "Show ReRoundedTB";
-                    }
-                    StartupCheckBox.Content = "Startup mandatory";
-                    break;
-
-                case StartupTaskState.DisabledByPolicy:
-                    StartupCheckBox.IsChecked = false;
-                    StartupCheckBox.IsEnabled = false;
-                    if (clean)
-                    {
-                        Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide ReRoundedTB";
-                    }
-                    StartupCheckBox.Content = "Startup unavailable";
-                    break;
-
-                case StartupTaskState.Enabled:
-                    StartupCheckBox.IsChecked = true;
-                    StartupCheckBox.IsEnabled = true;
-                    if (clean)
-                    {
-                        Visibility = Visibility.Hidden;
-                        ShowMenuItem.Header = "Show ReRoundedTB";
-                    }
-                    StartupCheckBox.Content = "Run at startup";
-                    break;
-            }
-        }
-
-        // Checks if running as a UWP app
-        public bool IsRunningAsUWP()
-        {
-            try
-            {
-                Helpers helpers = new Helpers();
-                return helpers.IsRunningAsUwp();
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-        }
-
         private void DebugMenuItem_Click(object sender, RoutedEventArgs e)
         {
             IntPtr hwndNext = LocalPInvoke.FindWindowExA(taskbarDetails[0].TaskbarHwnd, IntPtr.Zero, "Start", null);
@@ -815,14 +681,6 @@ namespace RoundedTB
             {
                 LocalPInvoke.GetWindowRect(hwnd, out LocalPInvoke.RECT rect);
                 LocalPInvoke.MoveWindow(hwnd, rect.Left + 50, rect.Top, (rect.Right + 50) - (rect.Left + 50), rect.Bottom - rect.Top, true);
-            }
-        }
-
-        private async void ContextMenu_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (IsRunningAsUWP())
-            {
-                await StartupInit(false);
             }
         }
 

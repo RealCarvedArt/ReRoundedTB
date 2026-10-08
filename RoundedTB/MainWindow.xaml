@@ -32,7 +32,7 @@
 
         <tray:NotifyIcon x:Name="trayIcon" Grid.Row="0" Icon="pack://application:,,,/res/traydark.ico" TooltipText="ReRoundedTB" FocusOnLeftClick="False" MenuOnRightClick="True" LeftClick="trayIcon_LeftClick">
             <tray:NotifyIcon.Menu>
-                <ContextMenu MouseEnter="ContextMenu_MouseEnter">
+                <ContextMenu>
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Clicked"/>
                     <MenuItem x:Name="DebugMenuItem" Header="Debug" Visibility ="Hidden" Click="DebugMenuItem_Click" Height="0"/>
                     <MenuItem x:Name ="ShowMenuItem" Header="Show ReRoundedTB" Click="ShowMenuItem_Click"/>

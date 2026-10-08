@@ -14,11 +14,12 @@ jobs:
   build:
     name: build-windows
     runs-on: windows-2022
-    timeout-minutes: 20
+    timeout-minutes: 30
     permissions:
       contents: read
-      id-token: write      # sign build provenance via GitHub's OIDC token
-      attestations: write # store the provenance attestation
+      actions: read         # SignPath downloads the unsigned artifact from this run
+      id-token: write       # sign build provenance via GitHub's OIDC token
+      attestations: write   # store the provenance attestation
 
     steps:
     # Actions are pinned to full commit SHAs so a moved tag can't change what runs
@@ -41,11 +42,54 @@ jobs:
         $out
         if ($out -match 'has the following vulnerable packages') { exit 1 }
 
+    - name: Locate build output
+      id: build
+      run: |
+        $dir = (Get-ChildItem RoundedTB\bin\Release -Directory | Select-Object -First 1).FullName
+        $version = (Get-Item "$dir\ReRoundedTB.exe").VersionInfo.FileVersion
+        "dir=$dir" >> $env:GITHUB_OUTPUT
+        "version=$version" >> $env:GITHUB_OUTPUT
+        "Build output: $dir (version $version)"
+
+    # Code signing via SignPath Foundation. Skipped until the repository variable SIGNPATH_ORGANIZATION_ID is set
+    # (plus SIGNPATH_PROJECT_SLUG, SIGNPATH_SIGNING_POLICY_SLUG and the secret SIGNPATH_API_TOKEN). See .signpath/README.md.
+    - name: Upload unsigned build for signing
+      id: upload-unsigned
+      if: vars.SIGNPATH_ORGANIZATION_ID != '' && github.event_name != 'pull_request'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: unsigned-${{ github.sha }}
+        path: ${{ steps.build.outputs.dir }}\*
+
+    - name: Sign with SignPath
+      if: steps.upload-unsigned.outcome == 'success'
+      uses: SignPath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3.0
+      with:
+        api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+        organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+        project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+        signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+        github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+        parameters: |
+          version: "${{ steps.build.outputs.version }}"
+        wait-for-completion: true
+        output-artifact-directory: signed
+
+    - name: Check signatures
+      if: steps.upload-unsigned.outcome == 'success'
+      run: |
+        foreach ($f in 'signed\ReRoundedTB.exe', 'signed\ReRoundedTB.dll') {
+          $sig = Get-AuthenticodeSignature $f
+          "$f : $($sig.Status) ($($sig.SignerCertificate.Subject))"
+          if ($sig.Status -ne 'Valid') { exit 1 }
+        }
+
     - name: Package
       run: |
-        $out = Get-ChildItem RoundedTB\bin\Release -Directory | Select-Object -First 1
-        Compress-Archive -Path "$($out.FullName)\*" -DestinationPath ReRoundedTB.zip
-        Copy-Item "$($out.FullName)\ReRoundedTB.exe", "$($out.FullName)\ReRoundedTB.dll" .
+        $src = if (Test-Path signed\ReRoundedTB.exe) { (Resolve-Path signed).Path } else { '${{ steps.build.outputs.dir }}' }
+        "Packaging from $src"
+        Compress-Archive -Path "$src\*" -DestinationPath ReRoundedTB.zip
+        Copy-Item "$src\ReRoundedTB.exe", "$src\ReRoundedTB.dll" .
 
     # Lets anyone confirm a download was built from this repo: gh attestation verify <file> --repo <owner>/<repo>
     - name: Attest build provenance

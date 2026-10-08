@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SignPath artifact configuration for ReRoundedTB. Paste this into the SignPath project's artifact configuration.
+  The GitHub Actions artifact (the build output folder) is uploaded as a ZIP, so the root is <zip-file>.
+  Only ReRoundedTB's own binaries are signed; the product name and version must match, which the CI build guarantees.
+  CI passes the version (e.g. 3.7.0.0) as the "version" parameter.
+-->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <parameters>
+    <parameter name="version" required="true" />
+  </parameters>
+  <zip-file>
+    <pe-file-set product-name="ReRoundedTB" product-version="${version}" file-version="${version}">
+      <include path="ReRoundedTB.exe" />
+      <include path="ReRoundedTB.dll" />
+      <for-each>
+        <authenticode-sign />
+      </for-each>
+    </pe-file-set>
+  </zip-file>
+</artifact-configuration>
