@@ -1,5 +1,4 @@
-﻿using IWshRuntimeLibrary;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -638,9 +637,10 @@ namespace RoundedTB
                 {
                     Directory.CreateDirectory(shortcutFolder);
                 }
-                WshShell shellClass = new WshShell();
+                // Late-bound WScript.Shell, so the build doesn't need a COM interop reference (which only Visual Studio's MSBuild can resolve)
+                dynamic shellClass = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
                 string rtbStartupLink = Path.Combine(shortcutFolder, "RoundedTB.lnk");
-                IWshShortcut shortcut = (IWshShortcut)shellClass.CreateShortcut(rtbStartupLink);
+                dynamic shortcut = shellClass.CreateShortcut(rtbStartupLink);
                 // On .NET 6 GetCommandLineArgs()[0] is RoundedTB.dll, which Windows can't launch; ProcessPath is the .exe
                 shortcut.TargetPath = Environment.ProcessPath;
                 shortcut.IconLocation = Environment.ProcessPath;
