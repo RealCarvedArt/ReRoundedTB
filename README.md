@@ -1,6 +1,6 @@
-![RoundedTB](https://cdn.discordapp.com/attachments/272509873479221249/891555515799318568/unknown.png)
+<img width="16" height="16" alt="RoundedTB" src="https://github.com/user-attachments/assets/2bbcd777-2902-4e4d-ba7d-0681276f6335" /> ReRoundedTB
 
-# RoundedTB
+# ReRoundedTB
 #### Add margins, rounded corners and segments to your taskbars!
 
 ![image](https://user-images.githubusercontent.com/31840547/134795141-76349eaf-12da-40f8-b2a0-d7b7c268d152.png)
