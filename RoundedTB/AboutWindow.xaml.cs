@@ -19,12 +19,14 @@ namespace RoundedTB
     /// <summary>
     /// Interaction logic for AboutWindow.xaml
     /// </summary>
-    public partial class AboutWindow : Window
+    public partial class AboutWindow : Wpf.Ui.Controls.FluentWindow
     {
         public AboutWindow()
         {
             InitializeComponent();
-            WPFUI.Background.Manager.Apply(WPFUI.Background.BackgroundType.Mica, this);
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+            // Single source of truth: <Version> in RoundedTB.csproj
+            subtitleBlock.Text = "Version " + typeof(AboutWindow).Assembly.GetName().Version.ToString(3);
         }
 
         private void okButton_Click(object sender, RoutedEventArgs e)

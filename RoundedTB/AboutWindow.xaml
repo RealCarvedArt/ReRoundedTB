@@ -1,12 +1,13 @@
-﻿<Window x:Class="RoundedTB.AboutWindow"
+﻿<ui:FluentWindow x:Class="RoundedTB.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RoundedTB"
-        xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Style="{StaticResource UiWindow}"
+        WindowBackdropType="Mica"
+        ExtendsContentIntoTitleBar="True"
         Background="#20808080"
         Title="RoundedTB - About" Height="616" Width="500"
         Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
@@ -17,9 +18,13 @@
         <Image x:Name="bannerCan" Visibility ="Hidden" HorizontalAlignment="Center" Height="146" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerCan.png" Width="500" Stretch="UniformToFill" Margin="0,-16,0,0"/>
         <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="85" Click="okButton_Click" FontWeight="Normal"/>
         <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,35,0,0" TextWrapping="Wrap" Text="Welcome to RoundedTB!" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="36" Opacity="0.795"/>
-        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,85,0,0" TextWrapping="Wrap" Text="P3.6" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
+        <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,85,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
 
-        <wpfui:TitleBar x:Name="aboutTitleBar" Grid.Row="0" NotifyIconTooltip="RoundedTB" Title="RoundedTB - About" Icon="pack://application:,,,/RoundedTB.ico" Height="51" ShowMaximize="False"/>
+        <ui:TitleBar x:Name="aboutTitleBar" Grid.Row="0" Title="RoundedTB - About" Height="51" ShowMaximize="False" VerticalAlignment="Top">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/RoundedTB.ico"/>
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
 
 
         <TextBlock x:Name="bodyBlockMain" Margin="10,134,10,0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI SemiBold" FontSize="14" Height="37" VerticalAlignment="Top">
@@ -94,23 +99,19 @@
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock4" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="21">
                     • More in-depth instructions, tips and tricks are available in the 
-                    <Hyperlink NavigateUri="https://github.com/torchgm/RoundedTB#readme" RequestNavigate="Hyperlink_RequestNavigate">
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/RoundedTB#readme" RequestNavigate="Hyperlink_RequestNavigate">
                         README
                     </Hyperlink>.
                     <LineBreak/>
-                    • If you're having any issues, or just want to talk about RoundedTB, feel free to join
-                    <Hyperlink NavigateUri="https://discord.gg/wYQJd8VGSB" RequestNavigate="Hyperlink_RequestNavigate">
-                        the official Discord server
-                    </Hyperlink>.
-                    <LineBreak/>
-                    • If you want to browse the source code, file an issue or suggest a feature, check out
-                    <Hyperlink NavigateUri="https://github.com/torchgm/RoundedTB" RequestNavigate="Hyperlink_RequestNavigate">
+
+                    • To browse the source code or download the latest release, visit
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/RoundedTB" RequestNavigate="Hyperlink_RequestNavigate">
                         the RoundedTB GitHub repository
                     </Hyperlink>.
                     <LineBreak/>
                     <LineBreak/>
                     RoundedTB is licensed under the 
-                    <Hyperlink NavigateUri="https://github.com/torchgm/RoundedTB/blob/master/LICENSE" RequestNavigate="Hyperlink_RequestNavigate">
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/RoundedTB/blob/master/LICENSE" RequestNavigate="Hyperlink_RequestNavigate">
                         GNU General Public License v3.0
                     </Hyperlink>. By using the software, you agree to accepting the terms of this license.
                     <LineBreak/>
@@ -128,4 +129,4 @@
 
 
     </Grid>
-</Window>
+</ui:FluentWindow>

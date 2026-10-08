@@ -15,7 +15,9 @@ namespace RoundedTB
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            WPFUI.Theme.Watcher.Start();
+            base.OnStartup(e);
+            // Match the Windows light/dark setting; each window then follows changes via SystemThemeWatcher
+            Wpf.Ui.Appearance.ApplicationThemeManager.ApplySystemTheme();
         }
     }
 }

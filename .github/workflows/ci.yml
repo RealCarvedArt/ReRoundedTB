@@ -15,6 +15,10 @@ jobs:
     name: build-windows
     runs-on: windows-2022
     timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write      # sign build provenance via GitHub's OIDC token
+      attestations: write # store the provenance attestation
 
     steps:
     # Actions are pinned to full commit SHAs so a moved tag can't change what runs
@@ -37,13 +41,24 @@ jobs:
         $out
         if ($out -match 'has the following vulnerable packages') { exit 1 }
 
-    - name: Add commit hash to output folder
+    - name: Package
       run: |
-        Rename-Item -Path ".\RoundedTB\bin\Release" -NewName "RoundedTB-$(git rev-parse --short ${{ github.sha }})"
+        $out = Get-ChildItem RoundedTB\bin\Release -Directory | Select-Object -First 1
+        Compress-Archive -Path "$($out.FullName)\*" -DestinationPath RoundedTB.zip
+        Copy-Item "$($out.FullName)\RoundedTB.exe", "$($out.FullName)\RoundedTB.dll" .
+
+    # Lets anyone confirm a download was built from this repo: gh attestation verify <file> --repo <owner>/<repo>
+    - name: Attest build provenance
+      if: github.event_name != 'pull_request'
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: |
+          RoundedTB.zip
+          RoundedTB.exe
+          RoundedTB.dll
 
     - name: Upload artifacts
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        name: rtb-artifacts
-        path: |
-          .\RoundedTB\bin\RoundedTB-*\
+        name: rtb-${{ github.sha }}
+        path: RoundedTB.zip

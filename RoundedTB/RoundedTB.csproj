@@ -17,7 +17,10 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Version>3.7.0</Version>
+    <Product>RoundedTB</Product>
+    <AssemblyTitle>RoundedTB</AssemblyTitle>
+    <Copyright>Copyright © 2021</Copyright>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
@@ -34,14 +37,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DesktopBridge.Helpers">
-      <Version>1.2.1</Version>
+      <Version>1.2.2</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
+      <Version>13.0.4</Version>
     </PackageReference>
-    <PackageReference Include="WPF-UI">
-      <Version>1.2.1</Version>
-    </PackageReference>
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+    <PackageReference Include="WPF-UI.Tray" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="RoundedTB.ico" />

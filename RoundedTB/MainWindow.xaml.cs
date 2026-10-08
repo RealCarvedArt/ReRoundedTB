@@ -14,7 +14,6 @@ using Windows.ApplicationModel;
 using System.Diagnostics;
 using Microsoft.Win32;
 using System.Text;
-using WPFUI;
 using System.Windows.Forms;
 using System.Windows.Media;
 
@@ -30,7 +29,7 @@ namespace RoundedTB
     ///  for your gracious donations! 💖
     ///  
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     {
         public bool isWindows11;
         public List<Types.Taskbar> taskbarDetails = new List<Types.Taskbar>();
@@ -55,14 +54,13 @@ namespace RoundedTB
         ///  0: R3.0
         ///  1: P3.1B
         ///  2: R3.1
-        ///  3: P3.5
+        ///  3: P3.5 and later (bump this when the About window should show once after an update)
         /// </summary>
 
         public MainWindow()
         {
-            WPFUI.Background.Manager.Apply(WPFUI.Background.BackgroundType.Mica, this);
-
             InitializeComponent();
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
 
             // Check OS build, as behaviours rather-annoyingly differ between Windows 11 and Windows 10
@@ -429,19 +427,16 @@ namespace RoundedTB
 
         public void TrayIconCheck()
         {
-            
-            Uri resLight = new("pack://application:,,,/res/traylight.ico");
-            Uri resDark = new("pack://application:,,,/res/traydark.ico");
-            WPFUI.Theme.Style style = WPFUI.Theme.Manager.GetSystemTheme();
+        }
 
-            //if (style == WPFUI.Theme.Style.Light)
-            //{
-            //    mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resLight);
-            //}
-            //else
-            //{
-            //    mainTitleBar.NotifyIconImage = new System.Windows.Media.Imaging.BitmapImage(resDark);
-            //}
+        private void trayIcon_LeftClick(Wpf.Ui.Tray.Controls.NotifyIcon sender, RoutedEventArgs e)
+        {
+            // Left-clicking the tray icon opens the settings, as is conventional for tray apps
+            if (!IsVisible)
+            {
+                ShowMenuItem_Click(null, null);
+            }
+            Activate();
         }
 
 
@@ -933,9 +928,9 @@ namespace RoundedTB
 
         private void taskbarRectStandIn_Click(object sender, RoutedEventArgs e)
         {
-            taskbarRectStandIn.Appearance = WPFUI.Common.Appearance.Primary;
-            trayRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            widgetsRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
+            taskbarRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Primary;
+            trayRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary;
+            widgetsRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary;
             dynamicCheckBox.Visibility = Visibility.Visible;
             showTrayCheckBox.Visibility = Visibility.Hidden;
             showWidgetsCheckBox.Visibility = Visibility.Hidden;
@@ -966,9 +961,9 @@ namespace RoundedTB
 
         private void trayRectStandIn_Click(object sender, RoutedEventArgs e)
         {
-            taskbarRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            trayRectStandIn.Appearance = WPFUI.Common.Appearance.Primary;
-            widgetsRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
+            taskbarRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary;
+            trayRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Primary;
+            widgetsRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary;
             dynamicCheckBox.Visibility = Visibility.Hidden;
             showTrayCheckBox.Visibility = Visibility.Visible;
             showWidgetsCheckBox.Visibility = Visibility.Hidden;
@@ -985,9 +980,9 @@ namespace RoundedTB
 
         private void widgetsRectStandIn_Click(object sender, RoutedEventArgs e)
         {
-            taskbarRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            trayRectStandIn.Appearance = WPFUI.Common.Appearance.Secondary;
-            widgetsRectStandIn.Appearance = WPFUI.Common.Appearance.Primary;
+            taskbarRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary;
+            trayRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary;
+            widgetsRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Primary;
             dynamicCheckBox.Visibility = Visibility.Hidden;
             showTrayCheckBox.Visibility = Visibility.Hidden;
             showWidgetsCheckBox.Visibility = Visibility.Visible;
