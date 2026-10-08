@@ -5,10 +5,7 @@
 
 ReRoundedTB is a maintained fork of [RoundedTB](https://github.com/torchgm/RoundedTB) by torchgm, which is no longer developed. It fixes bugs on current Windows 11 builds and runs on a supported .NET version. The original author's documentation below still applies.
 
-<p>
-  <img src="docs/screenshots/settings.png" alt="ReRoundedTB settings window" width="58%" />
-  <img src="docs/screenshots/about.png" alt="ReRoundedTB About window" width="40%" />
-</p>
+![ReRoundedTB settings and About windows on Windows 11, with a rounded, dynamic taskbar](docs/screenshots/ReRoundedTB.png)
 
 ## How do I get it?
 Download the latest `ReRoundedTB_*.zip` from [Releases](https://github.com/RealCarvedArt/ReRoundedTB/releases/latest), unzip it and run `ReRoundedTB.exe`. It needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (x64). Settings from RoundedTB carry over automatically. If you're switching from the original RoundedTB, close it first so the two don't fight over the taskbar.
@@ -48,6 +45,20 @@ Fixed in ReRoundedTB: dynamic mode not hiding the left side of the taskbar when 
 
 ## Other info
 If anything breaks catastrophically, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd> to open Task Manager, end ReRoundedTB and then restart Explorer. At worst, just reboot your PC. ReRoundedTB makes no permanent changes (though it will run on startup if you enable it from the tray icon), so restarting should clear any issues.
+
+## Code signing policy
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+> **Status:** code signing is being set up. Until it's active, releases are unsigned. You can still confirm a download was built from this repository with `gh attestation verify` (see [How do I get it?](#how-do-i-get-it)).
+
+Releases are built automatically from this repository by GitHub Actions, and every signing request is approved manually.
+
+**Team roles**
+- Committers and reviewers: [RealCarvedArt](https://github.com/RealCarvedArt)
+- Approvers: [RealCarvedArt](https://github.com/RealCarvedArt)
+
+**Privacy policy**
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
 
 ## Credits and licence
 ReRoundedTB is based on [RoundedTB](https://github.com/torchgm/RoundedTB), created by torchgm. The documentation above was written by the original author. Like RoundedTB, ReRoundedTB is licensed under the [GNU General Public License v3.0](LICENSE).
