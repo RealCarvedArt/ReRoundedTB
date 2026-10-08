@@ -5,7 +5,10 @@
 
 ReRoundedTB is a maintained fork of [RoundedTB](https://github.com/torchgm/RoundedTB) by torchgm, which is no longer developed. It fixes bugs on current Windows 11 builds and runs on a supported .NET version. The original author's documentation below still applies.
 
-![image](https://user-images.githubusercontent.com/31840547/134795141-76349eaf-12da-40f8-b2a0-d7b7c268d152.png)
+<p>
+  <img src="docs/screenshots/settings.png" alt="ReRoundedTB settings window" width="58%" />
+  <img src="docs/screenshots/about.png" alt="ReRoundedTB About window" width="40%" />
+</p>
 
 ## How do I get it?
 Download the latest `ReRoundedTB_*.zip` from [Releases](https://github.com/RealCarvedArt/ReRoundedTB/releases/latest), unzip it and run `ReRoundedTB.exe`. It needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (x64). Settings from RoundedTB carry over automatically. If you're switching from the original RoundedTB, close it first so the two don't fight over the taskbar.
