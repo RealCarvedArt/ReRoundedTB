@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
-        Title="RoundedTB" Height="458" Width="718"
+        Title="ReRoundedTB" Height="458" Width="718"
         Background="#20808080"
         d:Background="DarkGray"
         Visibility = "Visible"
@@ -24,19 +24,19 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar x:Name="mainTitleBar" Grid.Row="0" Margin="0,0,0,0" Title="RoundedTB - Configuration" Height="51" ShowMaximize="False">
+        <ui:TitleBar x:Name="mainTitleBar" Grid.Row="0" Margin="0,0,0,0" Title="ReRoundedTB - Configuration" Height="51" ShowMaximize="False">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="pack://application:,,,/RoundedTB.ico"/>
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
-        <tray:NotifyIcon x:Name="trayIcon" Grid.Row="0" Icon="pack://application:,,,/res/traydark.ico" TooltipText="RoundedTB" FocusOnLeftClick="False" MenuOnRightClick="True" LeftClick="trayIcon_LeftClick">
+        <tray:NotifyIcon x:Name="trayIcon" Grid.Row="0" Icon="pack://application:,,,/res/traydark.ico" TooltipText="ReRoundedTB" FocusOnLeftClick="False" MenuOnRightClick="True" LeftClick="trayIcon_LeftClick">
             <tray:NotifyIcon.Menu>
                 <ContextMenu MouseEnter="ContextMenu_MouseEnter">
                     <CheckBox x:Name ="StartupCheckBox" Content="Run at startup" Click="Startup_Clicked"/>
                     <MenuItem x:Name="DebugMenuItem" Header="Debug" Visibility ="Hidden" Click="DebugMenuItem_Click" Height="0"/>
-                    <MenuItem x:Name ="ShowMenuItem" Header="Show RoundedTB" Click="ShowMenuItem_Click"/>
-                    <MenuItem x:Name ="CloseMenuItem" Header="Close RoundedTB" Click="CloseMenuItem_Click"/>
+                    <MenuItem x:Name ="ShowMenuItem" Header="Show ReRoundedTB" Click="ShowMenuItem_Click"/>
+                    <MenuItem x:Name ="CloseMenuItem" Header="Close ReRoundedTB" Click="CloseMenuItem_Click"/>
                 </ContextMenu>
             </tray:NotifyIcon.Menu>
         </tray:NotifyIcon>
@@ -90,7 +90,7 @@
                 <ui:Button x:Name="trayRectStandIn" HorizontalAlignment="Stretch" Margin="415,0,5,5" Click="trayRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary"/>
                 <ui:Button x:Name="widgetsRectStandIn" HorizontalAlignment="Stretch" Margin="5,0,415,5" Click="widgetsRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary"/>
 
-                <Label Content="RoundedTB" HorizontalAlignment="Center" Margin="0,59,0,108" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="60" Opacity="0.75"/>
+                <Label Content="ReRoundedTB" HorizontalAlignment="Center" Margin="0,59,0,108" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="60" Opacity="0.75"/>
                 <Label Content="To begin, select a taskbar segment below." HorizontalAlignment="Center" Margin="0,138,0,75" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="20" Opacity="0.75"/>
             </Grid>
 

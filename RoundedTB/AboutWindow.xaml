@@ -9,7 +9,7 @@
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
         Background="#20808080"
-        Title="RoundedTB - About" Height="616" Width="500"
+        Title="ReRoundedTB - About" Height="616" Width="500"
         Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
     <Grid>
 
@@ -17,10 +17,10 @@
         <Image x:Name="bannerDev" Visibility ="Hidden" HorizontalAlignment="Center" Height="128" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerDev.png" Width="500" Stretch="UniformToFill" Margin="0,-16,0,0"/>
         <Image x:Name="bannerCan" Visibility ="Hidden" HorizontalAlignment="Center" Height="146" VerticalAlignment="Top"  Opacity="0.8" Source="res\HeadBannerCan.png" Width="500" Stretch="UniformToFill" Margin="0,-16,0,0"/>
         <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="85" Click="okButton_Click" FontWeight="Normal"/>
-        <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,35,0,0" TextWrapping="Wrap" Text="Welcome to RoundedTB!" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="36" Opacity="0.795"/>
+        <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,35,0,0" TextWrapping="Wrap" Text="Welcome to ReRoundedTB!" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="36" Opacity="0.795"/>
         <TextBlock x:Name="subtitleBlock" HorizontalAlignment="Left" Margin="10,85,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="22" Opacity="0.795" Height="30"/>
 
-        <ui:TitleBar x:Name="aboutTitleBar" Grid.Row="0" Title="RoundedTB - About" Height="51" ShowMaximize="False" VerticalAlignment="Top">
+        <ui:TitleBar x:Name="aboutTitleBar" Grid.Row="0" Title="ReRoundedTB - About" Height="51" ShowMaximize="False" VerticalAlignment="Top">
             <ui:TitleBar.Icon>
                 <ui:ImageIcon Source="pack://application:,,,/RoundedTB.ico"/>
             </ui:TitleBar.Icon>
@@ -28,7 +28,7 @@
 
 
         <TextBlock x:Name="bodyBlockMain" Margin="10,134,10,0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI SemiBold" FontSize="14" Height="37" VerticalAlignment="Top">
-            <Bold>Thanks for downloading RoundedTB. Expand the following categories for more information.</Bold>
+            <Bold>Thanks for downloading ReRoundedTB. Expand the following categories for more information.</Bold>
         </TextBlock>
 
         <ScrollViewer Margin="0,176,0,0" VerticalScrollBarVisibility="Hidden" Height="378" VerticalAlignment="Top">
@@ -82,7 +82,7 @@
                 <Expander x:Name="expander3" HorizontalAlignment="Center" Header="Known issues" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock3" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
-                    • Using RoundedTB with Windows' autohide feature can result in heavy flickering, bugs, an inability to access the taskbar and isn't supported. An upcoming version of RoundedTB will introduce a custom autohide feature that will work correctly.
+                    • Using ReRoundedTB with Windows' autohide feature can result in heavy flickering, bugs, an inability to access the taskbar and isn't supported.
                     <LineBreak/>
                     • Dynamic mode and split mode only work correctly when the taskbar is at the top or bottom of the monitor.
                     <LineBreak/>
@@ -99,19 +99,19 @@
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock4" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="21">
                     • More in-depth instructions, tips and tricks are available in the 
-                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/RoundedTB#readme" RequestNavigate="Hyperlink_RequestNavigate">
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB#readme" RequestNavigate="Hyperlink_RequestNavigate">
                         README
                     </Hyperlink>.
                     <LineBreak/>
 
                     • To browse the source code or download the latest release, visit
-                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/RoundedTB" RequestNavigate="Hyperlink_RequestNavigate">
-                        the RoundedTB GitHub repository
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB" RequestNavigate="Hyperlink_RequestNavigate">
+                        the ReRoundedTB GitHub repository
                     </Hyperlink>.
                     <LineBreak/>
                     <LineBreak/>
-                    RoundedTB is licensed under the 
-                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/RoundedTB/blob/master/LICENSE" RequestNavigate="Hyperlink_RequestNavigate">
+                    ReRoundedTB is a fork of <Hyperlink NavigateUri="https://github.com/torchgm/RoundedTB" RequestNavigate="Hyperlink_RequestNavigate">RoundedTB</Hyperlink> by torchgm, and is licensed under the 
+                    <Hyperlink NavigateUri="https://github.com/RealCarvedArt/ReRoundedTB/blob/master/LICENSE" RequestNavigate="Hyperlink_RequestNavigate">
                         GNU General Public License v3.0
                     </Hyperlink>. By using the software, you agree to accepting the terms of this license.
                     <LineBreak/>

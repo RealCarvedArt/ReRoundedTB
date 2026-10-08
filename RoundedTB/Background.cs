@@ -55,7 +55,7 @@ namespace RoundedTB
                                     LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
                                     LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
 
-                                    if (windowClass.ToString().Contains("HwndWrapper[RoundedTB") && windowTitle.ToString() == "RoundedTB_SettingsRequest")
+                                    if (windowClass.ToString().Contains("HwndWrapper[ReRoundedTB;") && windowTitle.ToString() == "ReRoundedTB_SettingsRequest")
                                     {
                                         mw.Dispatcher.Invoke(() =>
                                         {
@@ -64,7 +64,7 @@ namespace RoundedTB
                                                 mw.ShowMenuItem_Click(null, null);
                                             }
                                         });
-                                        LocalPInvoke.SetWindowText(hwnd, "RoundedTB");
+                                        LocalPInvoke.SetWindowText(hwnd, "ReRoundedTB");
                                     }
                                 }
                                 catch (Exception) { }

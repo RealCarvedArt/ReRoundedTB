@@ -18,8 +18,10 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <Version>3.7.0</Version>
-    <Product>RoundedTB</Product>
-    <AssemblyTitle>RoundedTB</AssemblyTitle>
+    <Product>ReRoundedTB</Product>
+    <AssemblyTitle>ReRoundedTB</AssemblyTitle>
+    <AssemblyName>ReRoundedTB</AssemblyName>
+    <RootNamespace>RoundedTB</RootNamespace>
     <Copyright>Copyright © 2021</Copyright>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>

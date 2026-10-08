@@ -97,10 +97,10 @@ namespace RoundedTB
                         LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
                         LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
 
-                        // .NET Framework builds use "HwndWrapper[RoundedTB.exe;;...", .NET 6+ builds "HwndWrapper[RoundedTB;;..."
-                        if (windowClass.ToString().Contains("HwndWrapper[RoundedTB") && windowTitle.ToString() == "RoundedTB")
+                        // WPF window classes are "HwndWrapper[<process name>;;<guid>]"
+                        if (windowClass.ToString().Contains("HwndWrapper[ReRoundedTB;") && windowTitle.ToString() == "ReRoundedTB")
                         {
-                            LocalPInvoke.SetWindowText(hwnd, "RoundedTB_SettingsRequest");
+                            LocalPInvoke.SetWindowText(hwnd, "ReRoundedTB_SettingsRequest");
                         }
                     }
                     catch (Exception) { }
@@ -109,6 +109,16 @@ namespace RoundedTB
                 isAlreadyRunning = true;
                 // Closing a window from its constructor makes StartupUri's Show() throw, so exit outright.
                 // Nothing has been applied to the taskbar yet.
+                Environment.Exit(0);
+                return;
+            }
+
+            // The original RoundedTB has a different process name, so the check above misses it, and two copies fight over the taskbar
+            if (Process.GetProcessesByName("RoundedTB").Length > 0)
+            {
+                System.Windows.MessageBox.Show(
+                    "RoundedTB is already running. Close it from its tray icon (right-click > Close RoundedTB), then start ReRoundedTB again.",
+                    "ReRoundedTB", MessageBoxButton.OK, MessageBoxImage.Information);
                 Environment.Exit(0);
                 return;
             }
@@ -122,10 +132,15 @@ namespace RoundedTB
                 logPath = Path.Combine(Windows.Storage.ApplicationData.Current.RoamingFolder.Path, "rtb.log");
             }
 
-            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")) && !IsRunningAsUWP())
+            if (!IsRunningAsUWP())
+            {
+                MigrateLegacyStartupShortcut();
+            }
+
+            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName)) && !IsRunningAsUWP())
             {
                 StartupCheckBox.IsChecked = true;
-                ShowMenuItem.Header = "Show RoundedTB";
+                ShowMenuItem.Header = "Show ReRoundedTB";
             }
             taskbarThread.WorkerSupportsCancellation = true;
             taskbarThread.WorkerReportsProgress = true;
@@ -135,11 +150,11 @@ namespace RoundedTB
             interaction.FileSystem();
             if (!IsRunningAsUWP())
             {
-                interaction.AddLog($"RoundedTB started!");
+                interaction.AddLog($"ReRoundedTB started!");
             }
             else
             {
-                interaction.AddLog($"RoundedTB started in UWP mode!");
+                interaction.AddLog($"ReRoundedTB started in UWP mode!");
             }
             activeSettings = interaction.ReadJSON();
 
@@ -323,7 +338,7 @@ namespace RoundedTB
                 {
 
                 }
-                ShowMenuItem.Header = "Hide RoundedTB";
+                ShowMenuItem.Header = "Hide ReRoundedTB";
             }
 
             AutoHide(true, taskbarDetails);
@@ -527,7 +542,7 @@ namespace RoundedTB
             {
                 e.Cancel = true;
                 Visibility = Visibility.Hidden;
-                ShowMenuItem.Header = "Show RoundedTB";
+                ShowMenuItem.Header = "Show ReRoundedTB";
             }
             else
             {
@@ -562,7 +577,7 @@ namespace RoundedTB
                 {
                     interaction.AddLog($"Taskbar structure changed on exit:\n{aaaa.Message}");
                 }
-                interaction.AddLog("Exiting RoundedTB.");
+                interaction.AddLog("Exiting ReRoundedTB.");
             }
             if (!isAlreadyRunning)
             {
@@ -588,7 +603,7 @@ namespace RoundedTB
             if (IsVisible == false)
             {
                 Visibility = Visibility.Visible;
-                ShowMenuItem.Header = "Hide RoundedTB";
+                ShowMenuItem.Header = "Hide ReRoundedTB";
             }
             else
             {
@@ -598,7 +613,7 @@ namespace RoundedTB
                     App.Current.Windows[windowCount].Close();
                 }
                 Visibility = Visibility.Hidden;
-                ShowMenuItem.Header = "Show RoundedTB";
+                ShowMenuItem.Header = "Show ReRoundedTB";
             }
         }
 
@@ -612,9 +627,9 @@ namespace RoundedTB
             }
             else
             {
-                if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk")))
+                if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName)))
                 {
-                    System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "RoundedTB.lnk"));
+                    System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName));
                 }
                 else
                 {
@@ -634,14 +649,41 @@ namespace RoundedTB
                 }
                 // Late-bound WScript.Shell, so the build doesn't need a COM interop reference (which only Visual Studio's MSBuild can resolve)
                 dynamic shellClass = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
-                string rtbStartupLink = Path.Combine(shortcutFolder, "RoundedTB.lnk");
+                string rtbStartupLink = Path.Combine(shortcutFolder, StartupLinkName);
                 dynamic shortcut = shellClass.CreateShortcut(rtbStartupLink);
-                // On .NET 6 GetCommandLineArgs()[0] is RoundedTB.dll, which Windows can't launch; ProcessPath is the .exe
+                // On .NET 6+ GetCommandLineArgs()[0] is the .dll, which Windows can't launch; ProcessPath is the .exe
                 shortcut.TargetPath = Environment.ProcessPath;
                 shortcut.IconLocation = Environment.ProcessPath;
                 shortcut.Arguments = "";
-                shortcut.Description = "Start RoundedTB";
+                shortcut.Description = "Start ReRoundedTB";
                 shortcut.Save();
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private const string StartupLinkName = "ReRoundedTB.lnk";
+        private const string LegacyStartupLinkName = "RoundedTB.lnk";
+
+        // Before the rename the startup shortcut was RoundedTB.lnk. Move ours to the new name,
+        // but leave a shortcut belonging to a separate install of the original RoundedTB alone.
+        private void MigrateLegacyStartupShortcut()
+        {
+            try
+            {
+                string legacyLink = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), LegacyStartupLinkName);
+                if (!System.IO.File.Exists(legacyLink))
+                {
+                    return;
+                }
+                dynamic shellClass = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));
+                string target = shellClass.CreateShortcut(legacyLink).TargetPath;
+                if (string.Equals(Path.GetDirectoryName(target)?.TrimEnd('\\'), AppContext.BaseDirectory.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
+                {
+                    System.IO.File.Delete(legacyLink);
+                    EnableStartup();
+                }
             }
             catch (Exception)
             {
@@ -688,7 +730,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide RoundedTB";
+                        ShowMenuItem.Header = "Hide ReRoundedTB";
                     }
                     StartupCheckBox.Content = "Run at startup";
                     break;
@@ -699,7 +741,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide RoundedTB";
+                        ShowMenuItem.Header = "Hide ReRoundedTB";
                     }
                     StartupCheckBox.Content = "Startup unavailable";
                     break;
@@ -710,7 +752,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Hidden;
-                        ShowMenuItem.Header = "Show RoundedTB";
+                        ShowMenuItem.Header = "Show ReRoundedTB";
                     }
                     StartupCheckBox.Content = "Startup mandatory";
                     break;
@@ -721,7 +763,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Visible;
-                        ShowMenuItem.Header = "Hide RoundedTB";
+                        ShowMenuItem.Header = "Hide ReRoundedTB";
                     }
                     StartupCheckBox.Content = "Startup unavailable";
                     break;
@@ -732,7 +774,7 @@ namespace RoundedTB
                     if (clean)
                     {
                         Visibility = Visibility.Hidden;
-                        ShowMenuItem.Header = "Show RoundedTB";
+                        ShowMenuItem.Header = "Show ReRoundedTB";
                     }
                     StartupCheckBox.Content = "Run at startup";
                     break;
@@ -868,7 +910,7 @@ namespace RoundedTB
         private void splitHelpButton_Click(object sender, RoutedEventArgs e)
         {
             Infobox ib = new Infobox();
-            ib.Title = "RoundedTB - Split mode configuration";
+            ib.Title = "ReRoundedTB - Split mode configuration";
             ib.titleBlock.Text = "How to use Split Mode";
             ib.bodyBlock.Text = "Split mode has a couple of limitations and requires a small amount of setup to get working properly.\n\nLimitations:\n1) Split mode doesn't resize itself automatically. This feature will be coming to RoundedTB for Windows 10 in the future.\n2) Toolbars are not compatible with split mode currently, and will need to be disabled apart from one (more on that in a moment).\n3) Split mode only works when the taskbar is horizontal at the top or bottom of the screen.\n\nSetup:\n1) Right-click the taskbar and disable \"Lock the taskbar\".\n2) Right-click it again and turn off any existing toolbars.\n3) Right-click a third time, select Toolbars > Desktop.\n4) Use the small || handle to resize the taskbar as you please.";
             ib.ShowDialog();
@@ -880,9 +922,9 @@ namespace RoundedTB
             {
                 Infobox ib = new Infobox();
                 ib.Height = 450;
-                ib.Title = "RoundedTB - TranslucentTB compatibility";
+                ib.Title = "ReRoundedTB - TranslucentTB compatibility";
                 ib.titleBlock.Text = "Compatibility with TranslucentTB";
-                ib.bodyBlock.Text = "\nTranslucentTB is a utility that allows you to customise the opacity, blur and colour of the taskbar seamlessly with significantly finer control than other tools. Enable this option to allow RoundedTB and TranslucentTB to work together.\n\nThis is necessary due to a bug in Windows (it's not the fault of RoundedTB or TranslucentTB), and you might encounter some minor flickering when the taskbar \"updates\" (changes size, roundness or position). This is usually pretty minimal and many people use RoundedTB and TranslucentTB in tandem without complaint, but if it bothers you then I recommend sticking with either RoundedTB or TranslucentTB until a better solution is available.\n\nRegardless though, go show TranslucentTB some love! It's the OG Windows 10 aesthetic taskbar mod, the first one on the Microsoft Store and the project that inspired me to make RoundedTB. Plus, the dev is pretty awesome 💖";
+                ib.bodyBlock.Text = "\nTranslucentTB is a utility that allows you to customise the opacity, blur and colour of the taskbar seamlessly with significantly finer control than other tools. Enable this option to allow ReRoundedTB and TranslucentTB to work together.\n\nThis is necessary due to a bug in Windows (it's not the fault of RoundedTB or TranslucentTB), and you might encounter some minor flickering when the taskbar \"updates\" (changes size, roundness or position). This is usually pretty minimal and many people use RoundedTB and TranslucentTB in tandem without complaint, but if it bothers you then I recommend sticking with either RoundedTB or TranslucentTB until a better solution is available.\n\nRegardless though, go show TranslucentTB some love! It's the OG Windows 10 aesthetic taskbar mod, the first one on the Microsoft Store and the project that inspired me to make RoundedTB. Plus, the dev is pretty awesome 💖";
                 ib.ShowDialog();
             }
         }
