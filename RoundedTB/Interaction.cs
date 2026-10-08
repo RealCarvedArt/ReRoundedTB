@@ -29,9 +29,17 @@ namespace RoundedTB
 
         public Types.Settings ReadJSON()
         {
-            string jsonSettings = File.ReadAllText(mw.configPath);
-            Types.Settings settings = JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);
-            return settings;
+            // Returns null for an empty or corrupt config so the caller falls back to defaults
+            try
+            {
+                string jsonSettings = File.ReadAllText(mw.configPath);
+                return JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);
+            }
+            catch (Exception ex) when (ex is JsonException || ex is IOException)
+            {
+                AddLog($"Failed to read config, using defaults: {ex.Message}");
+                return null;
+            }
         }
 
         public bool IsWindows11()
@@ -46,8 +54,17 @@ namespace RoundedTB
 
         public void WriteJSON()
         {
-            File.Create(mw.configPath).Close();
-            File.WriteAllText(mw.configPath, JsonConvert.SerializeObject(mw.activeSettings, Formatting.Indented));
+            // Write to a temp file and swap it in, so a crash mid-write can't leave an empty/truncated config
+            string tempPath = mw.configPath + ".tmp";
+            File.WriteAllText(tempPath, JsonConvert.SerializeObject(mw.activeSettings, Formatting.Indented));
+            if (File.Exists(mw.configPath))
+            {
+                File.Replace(tempPath, mw.configPath, null);
+            }
+            else
+            {
+                File.Move(tempPath, mw.configPath);
+            }
         }
 
         public void FileSystem()
@@ -98,10 +115,7 @@ namespace RoundedTB
                 
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
-            if (File.ReadAllText(mw.configPath) == "" || File.ReadAllText(mw.configPath) == null)
-            {
-                WriteJSON(); // Initialises empty file
-            }
+            // An empty or corrupt config is handled by ReadJSON returning null, which applies the OS defaults
 
         }
 

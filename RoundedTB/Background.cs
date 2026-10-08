@@ -88,7 +88,7 @@ namespace RoundedTB
                         }
 
                         // Check if the taskbar is centred, and if it is, directly update the settings; using an interim bool to avoid delaying because I'm lazy
-                        bool isCentred = Taskbar.CheckIfCentred();
+                        bool isCentred = Taskbar.CheckIfCentred(mw.activeSettings.IsWindows11);
                         mw.activeSettings.IsCentred = isCentred;
 
                         // Work with static values to avoid some null reference exceptions
@@ -99,15 +99,17 @@ namespace RoundedTB
                         if (Taskbar.TaskbarCountOrHandleChanged(taskbars.Count, taskbars[0].TaskbarHwnd))
                         {
                             // Forcefully reset taskbars if the taskbar count or main taskbar handle has changed
-                            taskbars = Taskbar.GenerateTaskbarInfo();
+                            taskbars = RegenerateTaskbars();
                             Debug.WriteLine("Regenerating taskbar info");
                         }
 
+                        bool redrawThisPass = redrawOverride;
+                        redrawOverride = false;
                         for (int current = 0; current < taskbars.Count; current++)
                         {
                             if (taskbars[current].TaskbarHwnd == IntPtr.Zero || taskbars[current].AppListHwnd == IntPtr.Zero)
                             {
-                                taskbars = Taskbar.GenerateTaskbarInfo();
+                                taskbars = RegenerateTaskbars();
                                 Debug.WriteLine("Regenerating taskbar info due to a missing handle");
                                 break;
                             }
@@ -249,7 +251,7 @@ namespace RoundedTB
 
 
                             // If the taskbar's overall rect has changed, update it. If it's simple, just update. If it's dynamic, check it's a valid change, then update it.
-                            if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar, settings.IsDynamic) || taskbars[current].Ignored || redrawOverride)
+                            if (Taskbar.TaskbarRefreshRequired(taskbars[current], newTaskbar, settings.IsDynamic) || taskbars[current].Ignored || redrawThisPass)
                             {
                                 Debug.WriteLine($"Refresh required on taskbar {current}");
                                 taskbars[current].Ignored = false;
@@ -287,10 +289,28 @@ namespace RoundedTB
                 catch (TypeInitializationException ex)
                 {
                     mw.interaction.AddLog(ex.Message);
-                    mw.interaction.AddLog(ex.InnerException.Message);
-                    throw ex;
+                    mw.interaction.AddLog(ex.InnerException?.Message);
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // Don't let a transient failure (e.g. a taskbar vanishing mid-update) silently kill the worker
+                    try
+                    {
+                        mw.interaction.AddLog($"Background loop error: {ex}");
+                    }
+                    catch (Exception) { }
+                    System.Threading.Thread.Sleep(100);
                 }
             }
+        }
+
+        // Regenerated taskbars already hold their current rects, so TaskbarRefreshRequired would never fire and no region would be applied.
+        // Force a full redraw pass instead.
+        private List<Types.Taskbar> RegenerateTaskbars()
+        {
+            redrawOverride = true;
+            return Taskbar.GenerateTaskbarInfo();
         }
     }
 }
