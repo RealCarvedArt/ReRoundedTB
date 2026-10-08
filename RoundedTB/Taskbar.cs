@@ -23,7 +23,7 @@ namespace RoundedTB
         /// <returns>
         /// A bool indicating if the taskbar is centred.
         /// </returns>
-        public static bool CheckIfCentred()
+        public static bool CheckIfCentred(bool isWindows11)
         {
             bool retVal;
             try
@@ -32,7 +32,8 @@ namespace RoundedTB
                 {
                     if (key != null)
                     {
-                        int val = (int)key.GetValue("TaskbarAl");
+                        // TaskbarAl is absent until the user changes alignment; Windows 11 defaults to centred
+                        int val = (int)key.GetValue("TaskbarAl", isWindows11 ? 1 : 0);
 
                         if (val == 1)
                         {
@@ -178,7 +179,11 @@ namespace RoundedTB
                 };
 
                 IntPtr region = LocalPInvoke.CreateRoundRectRgn(taskbarEffectiveRegion.Left, taskbarEffectiveRegion.Top, taskbarEffectiveRegion.Width, taskbarEffectiveRegion.Height, taskbarEffectiveRegion.CornerRadius, taskbarEffectiveRegion.CornerRadius);
-                LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, region, true);
+                // The system only takes ownership of the region if SetWindowRgn succeeds
+                if (LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, region, true) == 0)
+                {
+                    LocalPInvoke.DeleteObject(region);
+                }
                 if (settings.CompositionCompat)
                 {
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
@@ -202,7 +207,6 @@ namespace RoundedTB
             try
             {
                 IntPtr mainRegion;
-                IntPtr workingRegion = LocalPInvoke.CreateRoundRectRgn(1, 1, 1, 1, 0, 0);
                 int centredDistanceFromEdge = 0;
 
                 // Create an effective region to be applied to the taskbar for the applist
@@ -291,8 +295,9 @@ namespace RoundedTB
                         trayEffectiveRegion.CornerRadius
                         );
 
-                    LocalPInvoke.CombineRgn(workingRegion, trayRegion, mainRegion, 2);
-                    mainRegion = workingRegion;
+                    // Merge into the main region (RGN_OR), then free the source as CombineRgn doesn't take ownership
+                    LocalPInvoke.CombineRgn(mainRegion, mainRegion, trayRegion, 2);
+                    LocalPInvoke.DeleteObject(trayRegion);
                 }
 
                 if (settings.ShowWidgets)
@@ -306,12 +311,15 @@ namespace RoundedTB
                         widgetsEffectiveRegion.CornerRadius
                         );
 
-                    LocalPInvoke.CombineRgn(workingRegion, widgetsRegion, mainRegion, 2);
-                    mainRegion = workingRegion;
+                    LocalPInvoke.CombineRgn(mainRegion, mainRegion, widgetsRegion, 2);
+                    LocalPInvoke.DeleteObject(widgetsRegion);
                 }
 
-                // Apply the final region to the taskbar
-                LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, mainRegion, true);
+                // Apply the final region to the taskbar. The system only takes ownership of the region if SetWindowRgn succeeds
+                if (LocalPInvoke.SetWindowRgn(taskbar.TaskbarHwnd, mainRegion, true) == 0)
+                {
+                    LocalPInvoke.DeleteObject(mainRegion);
+                }
                 if (settings.CompositionCompat)
                 {
                     Interaction.UpdateTranslucentTB(taskbar.TaskbarHwnd);
@@ -487,7 +495,7 @@ namespace RoundedTB
                     {
                         hwndSecTray = LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "TrayNotifyWnd", null); // Get handle to this secondary taskbar's tray
                     }
-                    LocalPInvoke.GetWindowRect(hwndTray, out LocalPInvoke.RECT rectSecTray); // Get the RECT for this secondary taskbar's tray
+                    LocalPInvoke.GetWindowRect(hwndSecTray, out LocalPInvoke.RECT rectSecTray); // Get the RECT for this secondary taskbar's tray
                     IntPtr hwndSecAppList = LocalPInvoke.FindWindowExA(LocalPInvoke.FindWindowExA(hwndCurrent, IntPtr.Zero, "WorkerW", null), IntPtr.Zero, "MSTaskListWClass", null); // Get the handle to the main taskbar's app list
                     LocalPInvoke.GetWindowRect(hwndSecAppList, out LocalPInvoke.RECT rectSecAppList);// Get the RECT for this secondary taskbar's app list
                     retVal.Add(new Types.Taskbar

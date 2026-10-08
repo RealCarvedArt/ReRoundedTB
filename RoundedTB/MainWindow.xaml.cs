@@ -109,7 +109,9 @@ namespace RoundedTB
                 }
                 shouldReallyDieNoReally = true;
                 isAlreadyRunning = true;
-                Close();
+                // Closing a window from its constructor makes StartupUri's Show() throw, so exit outright.
+                // Nothing has been applied to the taskbar yet.
+                Environment.Exit(0);
                 return;
             }
             TrayIconCheck();
@@ -143,14 +145,6 @@ namespace RoundedTB
             }
             activeSettings = interaction.ReadJSON();
 
-            if (isWindows11)
-            {
-                activeSettings.IsWindows11 = true;
-            }
-            else
-            {
-                activeSettings.IsWindows11 = false;
-            }
             // Default settings
             if (activeSettings == null)
             {
@@ -198,6 +192,7 @@ namespace RoundedTB
                     };
                 }
             }
+            activeSettings.IsWindows11 = isWindows11;
 
             if (version != activeSettings.Version && version != -1)
             {
@@ -254,7 +249,7 @@ namespace RoundedTB
                 {
                     if (key != null)
                     {
-                        int val = (int)key.GetValue("TaskbarAl");
+                        int val = (int)key.GetValue("TaskbarAl", isWindows11 ? 1 : 0);
                         if (val == 1)
                         {
                             isCentred = true;
@@ -462,7 +457,7 @@ namespace RoundedTB
 
             activeSettings.AutoHide = autoHideComboBox.SelectedIndex;
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
-            activeSettings.IsCentred = Taskbar.CheckIfCentred();
+            activeSettings.IsCentred = Taskbar.CheckIfCentred(isWindows11);
             activeSettings.ShowTray = (bool)showTrayCheckBox.IsChecked;
             activeSettings.ShowWidgets = (bool)showWidgetsCheckBox.IsChecked;
             activeSettings.CompositionCompat = (bool)compositionFixCheckBox.IsChecked;

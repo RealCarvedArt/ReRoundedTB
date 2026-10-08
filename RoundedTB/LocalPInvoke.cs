@@ -42,6 +42,10 @@ namespace RoundedTB
         public static extern IntPtr CreateRoundRectRgn(int x1, int y1, int x2, int y2, int w, int h);
 
         [DllImport("gdi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DeleteObject(IntPtr hObject);
+
+        [DllImport("gdi32.dll")]
         public static extern IntPtr CreateRectRgn(int x1, int y1, int x2, int y2);
 
         [DllImport("user32.dll")]
