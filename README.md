@@ -5,10 +5,6 @@
 
 ![image](https://user-images.githubusercontent.com/31840547/134795141-76349eaf-12da-40f8-b2a0-d7b7c268d152.png)
 
-
-## How do I get it?
-The easiest way to download RoundedTB is from the [Microsoft Store](https://www.microsoft.com/store/productId/9MTFTXSJ9M7F). You can also download the latest version from the Releases tab, unzip it and run `RoundedTB.exe`.
-
 ## To use
 ### Basic options
 The simplest way to use RoundedTB is by simply entering a margin and corner radius.
