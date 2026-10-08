@@ -63,19 +63,3 @@ This program will not transfer any information to other networked systems unless
 ## Credits and licence
 ReRoundedTB is based on [RoundedTB](https://github.com/torchgm/RoundedTB), created by torchgm. The documentation above was written by the original author. Like RoundedTB, ReRoundedTB is licensed under the [GNU General Public License v3.0](LICENSE).
 
-### Configuring split mode on Windows 10
-Split mode has a couple of limitations and requires a small amount of setup to get working properly.
-#### Limitations
-- Split mode doesn't resize itself automatically. This feature will be coming to RoundedTB for Windows 10 in the future.
-- Toolbars are not compatible with split mode currently, and will need to be disabled apart from one. This is because toolbars are used to mark the "empty" space on the taskbar.
-- Split mode only works when the taskbar is horizontal at the top or bottom of the screen, and on the primary monitor.
-#### Setup
-1. Right-click the taskbar and disable "Lock the taskbar".
-2. Right-click it again and turn off any existing toolbars.
-3. Right-click a third time, select Toolbars > Desktop.
-4. Use the small <kbd>||</kbd> handle to resize the taskbar as you please.
-
-Watch the following video for a guide on setting up split mode:
-
-https://user-images.githubusercontent.com/31840547/134795022-1312d011-40f2-4641-8c8d-3d6c0e752747.mp4
-
