@@ -23,7 +23,7 @@
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>RoundedTBCanary.ico</ApplicationIcon>
+    <ApplicationIcon>RoundedTB.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -93,9 +93,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="RoundedTB.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="RoundedTBDev.ico" />

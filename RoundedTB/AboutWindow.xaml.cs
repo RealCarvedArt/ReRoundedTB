@@ -33,17 +33,27 @@ namespace RoundedTB
         }
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            Process.Start(e.Uri.ToString());
+            OpenWithShell(e.Uri.ToString());
         }
 
         private void configButton_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start(((MainWindow)Application.Current.MainWindow).configPath);
+            OpenWithShell(((MainWindow)Application.Current.MainWindow).configPath);
         }
 
         private void logButton_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start(((MainWindow)Application.Current.MainWindow).logPath);
+            OpenWithShell(((MainWindow)Application.Current.MainWindow).logPath);
+        }
+
+        // .NET Core defaults UseShellExecute to false, so Process.Start(url/file) throws instead of opening it
+        private static void OpenWithShell(string target)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+            }
+            catch (Exception) { }
         }
     }
 }

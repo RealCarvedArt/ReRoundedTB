@@ -49,14 +49,14 @@ namespace RoundedTB
         public Interaction interaction;
         private HwndSource source;
         public int selectedSegment = 0; // 0 = Simple, 1 = AppList, 2 = Tray, 3 = Widgets
-        public int version = -1;
+        public int version = 3;
         /// <summary>
         /// Versions:
         /// -1: Canary
         ///  0: R3.0
         ///  1: P3.1B
         ///  2: R3.1
-        ///  3: R4
+        ///  3: P3.5
         /// </summary>
 
         public MainWindow()
