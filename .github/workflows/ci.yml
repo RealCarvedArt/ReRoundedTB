@@ -2,37 +2,39 @@ name: release
 
 on:
   push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: the build only needs to read the repo
+permissions:
+  contents: read
 
 jobs:
   build:
     name: build-windows
     runs-on: windows-2022
+    timeout-minutes: 20
 
     steps:
+    # Actions are pinned to full commit SHAs so a moved tag can't change what runs
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
-          submodules: recursive
-          
+        persist-credentials: false
+
     - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v1
-      
-    - name: NuGet Restore
-      run: |
-        cd ${{ github.workspace }}
-        nuget restore RoundedTB.sln
-      
+      uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
+
     - name: Build
-      run: |
-        cd ${{ github.workspace }}
-        msbuild "-property:Configuration=Release" -t:RoundedTB
+      run: msbuild RoundedTB\RoundedTB.csproj -restore "-property:Configuration=Release"
 
     - name: Add commit hash to output folder
       run: |
         Rename-Item -Path ".\RoundedTB\bin\Release" -NewName "RoundedTB-$(git rev-parse --short ${{ github.sha }})"
-        
+
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: rtb-artifacts
         path: |

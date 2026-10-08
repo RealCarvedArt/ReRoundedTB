@@ -641,8 +641,9 @@ namespace RoundedTB
                 WshShell shellClass = new WshShell();
                 string rtbStartupLink = Path.Combine(shortcutFolder, "RoundedTB.lnk");
                 IWshShortcut shortcut = (IWshShortcut)shellClass.CreateShortcut(rtbStartupLink);
-                shortcut.TargetPath = Environment.GetCommandLineArgs()[0];
-                shortcut.IconLocation = Environment.GetCommandLineArgs()[0];
+                // On .NET 6 GetCommandLineArgs()[0] is RoundedTB.dll, which Windows can't launch; ProcessPath is the .exe
+                shortcut.TargetPath = Environment.ProcessPath;
+                shortcut.IconLocation = Environment.ProcessPath;
                 shortcut.Arguments = "";
                 shortcut.Description = "Start RoundedTB";
                 shortcut.Save();
