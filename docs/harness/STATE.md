@@ -24,8 +24,11 @@ Gate values: pending, passed (date), failed (date), retroactive (date).
 |---|---|---|---|---|
 
 ## Next action
-1. Done 2026-10-09: CI run 37934487909 on c3f7ad0. All 4 jobs passed; CodeQL 0 results across 63 rules; provenance and SBOM attestations verify with the pinned command.
-2. Smoke-test the app on a real taskbar: keyboard slider, segment labels, the invalid-input dialog, and crash recovery.
-3. Remaining work: U3/U5–U7 accessibility, L3 race, L4 P/Invoke, P1/P2, info items.
-4. SignPath (M2) once reputation allows; due 2026-11-09.
+Round-2 fixes are done and re-verified (see the audit's "Remediation round 2"). Still open:
+- M2 signing (waiting on SignPath reputation; the Microsoft Store/MSIX route is an alternative)
+- U5 main-window reflow (known limitation)
+- U12 on Win10
+- U8, U10, U11, U15, U16 (not in this round's scope)
+- P6 (owner decision)
+
 Then re-run the phase 7 gate.
