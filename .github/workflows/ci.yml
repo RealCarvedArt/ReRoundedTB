@@ -21,6 +21,11 @@ jobs:
     outputs:
       version: ${{ steps.build.outputs.version }}
       artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+      sbom-artifact-id: ${{ steps.upload-sbom.outputs.artifact-id }}
+    env:
+      # Keep the build and test tooling from sending usage telemetry
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      TESTINGPLATFORM_TELEMETRY_OPTOUT: '1'
 
     steps:
     # Actions are pinned to full commit SHAs so a moved tag can't change what runs
@@ -56,7 +61,7 @@ jobs:
         "version=$version" >> $env:GITHUB_OUTPUT
         "Build output: $dir (version $version)"
 
-    # Uploaded before any third-party tool (the SBOM generator below) runs, so that tool can't alter what gets signed and attested
+    # Uploaded before any third-party tool (the SBOM generator and BinSkim below) runs, so those tools can't alter what gets signed and attested
     - name: Upload unsigned build
       id: upload-unsigned
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -72,6 +77,14 @@ jobs:
         dotnet-CycloneDX RoundedTB\RoundedTB.csproj --output sbom --filename ReRoundedTB.cdx.json --output-format Json --exclude-dev
         if (-not (Test-Path sbom\ReRoundedTB.cdx.json)) { Write-Error 'SBOM was not generated'; exit 1 }
 
+    # Uploaded before BinSkim runs, for the same reason as the build
+    - name: Upload SBOM
+      id: upload-sbom
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: sbom-${{ github.sha }}
+        path: sbom\ReRoundedTB.cdx.json
+
     # Binary hardening (ASLR, DEP, CFG, high-entropy VA, ...): the desktop stand-in for web security-header checks.
     # The package is pinned by version and by the SHA-512 that nuget.org's catalog lists for it.
     - name: Check binary hardening (BinSkim)
@@ -83,16 +96,15 @@ jobs:
         Expand-Archive binskim.zip binskim
         $dir = '${{ steps.build.outputs.dir }}'
         binskim\tools\net9.0\win-x64\BinSkim.exe analyze "$dir\ReRoundedTB.exe" "$dir\ReRoundedTB.dll" --output binskim.sarif --log ForceOverwrite
-        $failures = @((Get-Content binskim.sarif -Raw | ConvertFrom-Json).runs[0].results | Where-Object { $_.level -in 'error', 'warning' })
+        $run = (Get-Content binskim.sarif -Raw | ConvertFrom-Json).runs[0]
+        # A failing result with no explicit level defaults to "warning" in SARIF, so count it
+        $failures = @($run.results | Where-Object { (-not $_.kind -or $_.kind -eq 'fail') -and $_.level -notin 'note', 'none' })
         $failures | ForEach-Object { "$($_.ruleId): $($_.message.text)" }
-        if ($failures.Count -gt 0) { Write-Error "BinSkim found $($failures.Count) hardening issue(s)"; exit 1 }
+        # A file BinSkim couldn't load would otherwise skip its rules silently
+        $toolErrors = @($run.invocations | Where-Object { $_.executionSuccessful -eq $false }) + @($run.invocations.toolExecutionNotifications | Where-Object { $_.level -eq 'error' })
+        $toolErrors | ForEach-Object { "tool error: $($_.message.text)" }
+        if ($failures.Count -gt 0 -or $toolErrors.Count -gt 0) { Write-Error "BinSkim found $($failures.Count) hardening issue(s) and $($toolErrors.Count) tool error(s)"; exit 1 }
         'BinSkim: no hardening issues'
-
-    - name: Upload SBOM
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      with:
-        name: sbom-${{ github.sha }}
-        path: sbom\ReRoundedTB.cdx.json
 
   # Scans the full git history for committed secrets
   secrets:
@@ -166,13 +178,14 @@ jobs:
     - name: Download unsigned build
       uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
-        name: unsigned-${{ github.sha }}
+        # By ID, not name, so only the exact artifact the build job uploaded is used (its digest is checked on download)
+        artifact-ids: ${{ needs.build.outputs.artifact-id }}
         path: unsigned
 
     - name: Download SBOM
       uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
-        name: sbom-${{ github.sha }}
+        artifact-ids: ${{ needs.build.outputs.sbom-artifact-id }}
         path: sbom
 
     # Code signing via SignPath Foundation. Skipped until the repository variable SIGNPATH_ORGANIZATION_ID is set

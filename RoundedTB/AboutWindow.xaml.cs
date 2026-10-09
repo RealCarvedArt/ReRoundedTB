@@ -27,6 +27,16 @@ namespace RoundedTB
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Mica, updateAccents: false);
             // Single source of truth: <Version> in RoundedTB.csproj
             subtitleBlock.Text = "Version " + typeof(AboutWindow).Assembly.GetName().Version.ToString(3);
+
+            // In High Contrast, drop the translucent backdrop and dimmed text so Windows' contrast colours apply unaltered
+            if (SystemParameters.HighContrast)
+            {
+                Background = SystemColors.WindowBrush;
+                foreach (TextBlock block in new[] { titleBlock, subtitleBlock, bodyBlockMain, bodyBlock0, bodyBlock1, bodyBlock2, bodyBlock3, bodyBlock4 })
+                {
+                    block.Opacity = 1;
+                }
+            }
         }
 
         private void okButton_Click(object sender, RoutedEventArgs e)

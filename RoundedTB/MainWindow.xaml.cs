@@ -369,6 +369,11 @@ namespace RoundedTB
 
         public void AutoHide(bool enabled, List<Types.Taskbar> taskbarDetails)
         {
+            // No taskbars found (e.g. Explorer restarting): nothing to show or hide
+            if (taskbarDetails.Count == 0)
+            {
+                return;
+            }
             int workingHeight = Screen.PrimaryScreen.WorkingArea.Height;
             int boundsHeight = Screen.PrimaryScreen.Bounds.Height;
             int taskbarHeight = taskbarDetails[0].TaskbarRect.Bottom - taskbarDetails[0].TaskbarRect.Top;
@@ -553,9 +558,27 @@ namespace RoundedTB
         // Puts the normal taskbar back without quitting; unticking (or Apply) reshapes it again
         private void PauseMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (PauseMenuItem.IsChecked)
+            // Apply and Pause both wait on the worker while pumping messages; don't let one start inside the other's wait
+            if (applying)
+            {
+                PauseMenuItem.IsChecked = paused;
+                return;
+            }
+            if (!PauseMenuItem.IsChecked)
+            {
+                ApplyButton_Click(null, null);
+                TrayIconCheck();
+                return;
+            }
+
+            applying = true;
+            try
             {
                 StopWorker();
+                if (shouldReallyDieNoReally)
+                {
+                    return;
+                }
                 foreach (Types.Taskbar taskbar in taskbarDetails)
                 {
                     try
@@ -570,18 +593,22 @@ namespace RoundedTB
                 }
                 paused = true;
             }
-            else
+            finally
             {
-                ApplyButton_Click(null, null);
+                applying = false;
             }
             TrayIconCheck();
         }
 
         private void ResetMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (System.Windows.MessageBox.Show(
-                "Reset all ReRoundedTB settings (corner radius, margins and options) to their defaults?",
-                "ReRoundedTB", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes)
+            const string question = "Reset all ReRoundedTB settings (corner radius, margins and options) to their defaults?\n\n" +
+                "The taskbar is reshaped with the defaults straight away, and this can't be undone. Run at startup isn't changed.";
+            // Opened from the tray, often with the settings window hidden: own it when visible, otherwise keep it in front
+            MessageBoxResult answer = IsVisible
+                ? System.Windows.MessageBox.Show(this, question, "ReRoundedTB", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No)
+                : System.Windows.MessageBox.Show(question, "ReRoundedTB", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No, System.Windows.MessageBoxOptions.DefaultDesktopOnly);
+            if (answer != MessageBoxResult.Yes)
             {
                 return;
             }
@@ -663,17 +690,19 @@ namespace RoundedTB
             {
                 e.Cancel = true;
                 // Closing only hides the window; say so once, so the taskbar staying shaped isn't a surprise
+                Visibility = Visibility.Hidden;
+                ShowMenuItem.Header = "Show ReRoundedTB";
                 if (!activeSettings.HasSeenTrayNotice)
                 {
                     activeSettings.HasSeenTrayNotice = true;
                     interaction.WriteJSON();
-                    System.Windows.MessageBox.Show(this,
+                    // Shown after OnClosing returns: a modal box pumping messages mid-close would let tray > Close re-enter Close()
+                    Dispatcher.BeginInvoke(() => System.Windows.MessageBox.Show(
                         "ReRoundedTB is still running in the system tray, keeping your taskbar shaped.\n\n" +
-                        "Click its tray icon to open these settings again. To get the normal taskbar back, right-click the icon and choose Pause or Close ReRoundedTB.",
-                        "ReRoundedTB", MessageBoxButton.OK, MessageBoxImage.Information);
+                        "Click its tray icon to open these settings again (on Windows 11 it may be under the ^ arrow next to the clock). " +
+                        "To get the normal taskbar back, right-click the icon and choose Pause or Close ReRoundedTB.",
+                        "ReRoundedTB", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, System.Windows.MessageBoxOptions.DefaultDesktopOnly));
                 }
-                Visibility = Visibility.Hidden;
-                ShowMenuItem.Header = "Show ReRoundedTB";
             }
             else
             {

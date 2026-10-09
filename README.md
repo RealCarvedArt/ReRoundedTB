@@ -43,8 +43,8 @@ Without dynamic mode, the whole taskbar is a single segment.
 
 ### Tray menu
 - **Run at startup** - starts ReRoundedTB when you sign in.
-- **Pause (show the normal taskbar)** - puts your taskbars back to normal without quitting. Untick it, or click **Apply**, to reshape them again.
-- **Reset settings to defaults...** - after asking, sets the corner radius, margins and options back to how they were on first install.
+- **Pause (show the normal taskbar)** - puts your taskbars back to normal without quitting. Shaping resumes when you untick it, click **Apply**, press <kbd>Win</kbd>+<kbd>F2</kbd> or restart ReRoundedTB; the pause isn't remembered.
+- **Reset settings to defaults...** - after asking, sets the corner radius, margins and options back to how they were on first install and reshapes the taskbar. It can't be undone, and doesn't change **Run at startup**.
 - **Show / Hide ReRoundedTB** - opens or hides the settings window. Closing the settings window also hides it to the tray.
 - **Close ReRoundedTB** - quits and puts your taskbars back to normal.
 
