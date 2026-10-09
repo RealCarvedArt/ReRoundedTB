@@ -110,18 +110,40 @@ namespace RoundedTB
             {
                 System.Windows.Media.Color hover = light ? System.Windows.Media.Color.FromRgb(0x2A, 0x6C, 0x95) : System.Windows.Media.Color.FromRgb(0x4D, 0x9A, 0xCA);
                 System.Windows.Media.Color pressed = light ? System.Windows.Media.Color.FromRgb(0x26, 0x60, 0x85) : System.Windows.Media.Color.FromRgb(0x61, 0xA5, 0xD0);
+                System.Windows.Media.Color rest = light ? System.Windows.Media.Color.FromRgb(0x2F, 0x77, 0xA5) : System.Windows.Media.Color.FromRgb(0x3A, 0x8F, 0xC4);
                 System.Windows.Media.Color text = light ? System.Windows.Media.Colors.White : System.Windows.Media.Colors.Black;
                 ResourceDictionary resources = Current.Resources;
                 resources["AccentFillColorSecondary"] = hover;
                 resources["AccentFillColorSecondaryBrush"] = new System.Windows.Media.SolidColorBrush(hover);
                 resources["AccentFillColorTertiary"] = pressed;
                 resources["AccentFillColorTertiaryBrush"] = new System.Windows.Media.SolidColorBrush(pressed);
+                // The accent button's own brushes. Set here (not via the colour keys above) because WPF-UI's theme dictionary
+                // builds the text brushes from colours that don't follow a live theme switch: pressed text measured black on
+                // the light-mode pressed fill (3.09:1). App-level keys win over the theme dictionary and update live.
+                foreach (string key in AccentButtonBrushKeys)
+                {
+                    resources.Remove(key);
+                }
+                resources["AccentButtonBackground"] = new System.Windows.Media.SolidColorBrush(rest);
+                resources["AccentButtonBackgroundPointerOver"] = new System.Windows.Media.SolidColorBrush(hover);
+                resources["AccentButtonBackgroundPressed"] = new System.Windows.Media.SolidColorBrush(pressed);
+                resources["AccentButtonForeground"] = new System.Windows.Media.SolidColorBrush(text);
+                resources["AccentButtonForegroundPointerOver"] = new System.Windows.Media.SolidColorBrush(text);
                 resources["AccentButtonForegroundPressed"] = new System.Windows.Media.SolidColorBrush(text);
             }
             else
             {
-                Current.Resources.Remove("AccentButtonForegroundPressed");
+                foreach (string key in AccentButtonBrushKeys)
+                {
+                    Current.Resources.Remove(key);
+                }
             }
         }
+
+        private static readonly string[] AccentButtonBrushKeys =
+        {
+            "AccentButtonBackground", "AccentButtonBackgroundPointerOver", "AccentButtonBackgroundPressed",
+            "AccentButtonForeground", "AccentButtonForegroundPointerOver", "AccentButtonForegroundPressed",
+        };
     }
 }
