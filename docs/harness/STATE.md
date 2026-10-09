@@ -1,6 +1,6 @@
 # Harness State: ReRoundedTB
 
-Current phase: 7 Security & Quality Gates (gate failed; remediation in progress)
+Current phase: 10 Deployment (v3.7.2, at the owner's request; phases 8-9 not formally run, see below)
 Last updated: 2026-10-09
 
 | # | Phase | Gate | Record | Open findings |
@@ -11,10 +11,10 @@ Last updated: 2026-10-09
 | 4 | Backend Development | N/A (desktop app, no backend) | | |
 | 5 | Frontend Development | retroactive (2026-10-09), not recorded | | see U1–U16 |
 | 6 | API Integration | N/A (no API) | | |
-| 7 | Security & Quality Gates | failed (2026-10-09) | [07-security-quality-gates.md](07-security-quality-gates.md) | M1, M2, L1–L5, P1–P4, U1–U7 (+ info/low) — see `docs/security/audit-2026-10-09.md` |
+| 7 | Security & Quality Gates | passed (2026-10-09), with accepted risk R1 | [07-security-quality-gates.md](07-security-quality-gates.md) | None above Low. Known limitations: U5 (fixed layout; scrolls), U12 (Win10 untested), High Contrast/Narrator unverified. Audit rounds 1-6 in `docs/security/audit-2026-10-09.md` |
 | 8 | Performance & Optimization | pending | | |
-| 9 | Staging / QA | pending (blocked by 7) | | |
-| 10 | Deployment | pending | | v3.7.1 already shipped pre-harness |
+| 9 | Staging / QA | not formally run | [smoke-2026-10-09.md](smoke-2026-10-09.md) | Release smoke test (16 checks) on CI builds stands in as QA evidence |
+| 10 | Deployment | v3.7.2 released at the owner's request (2026-10-09) | | Rollback: v3.7.1 stays published (not rehearsed) |
 | 11 | Monitor & Iterate | pending | | |
 
 Gate values: pending, passed (date), failed (date), retroactive (date).
@@ -24,14 +24,13 @@ Gate values: pending, passed (date), failed (date), retroactive (date).
 |---|---|---|---|---|
 | M2 unsigned releases | RealCarvedArt | 2026-10-09 | 2027-04-09 | R1 in `docs/security/threat-register.md` |
 
+## Phase 7 gate decision (2026-10-09)
+Passed. The security review of rounds 5-6 passed (no Critical/High/Medium). The UX review was a conditional pass, and its conditions were met: on-screen evidence for `fd61b70`, plus hover/pressed accent contrast fixed and measured. The remaining items are Low/Info or known limitations, listed above. M2 (unsigned releases) is accepted as R1 until 2027-04-09. The final fixes after the reviews (SR6-1/2/5, accent states) were requested by the reviewers and verified on screen. They were not re-reviewed.
+
+## Deployment note
+The owner asked for a v3.7.2 release after the fixes. The harness wants a passed phase 9 gate and a rehearsed rollback first. Phase 8 (performance) and phase 9 (staging/QA) were not formally run. The 2026-10-09 release smoke test on CI builds is the QA evidence, and v3.7.1 stays downloadable as the rollback.
+
 ## Next action
-The release smoke test ran uncontained on 2026-10-09 (`docs/harness/smoke-2026-10-09.md`): 11 checks pass, 1 not run (crash, covered in round 2), 1 N/A (Win10). It found 5 issues, all fixed and retested on CI builds (audit round 5: light contrast, the accent after a live theme switch, tray Close showing the hide notice, and two Explorer-restart gaps).
-
-Before marking the phase 7 gate passed:
-1. Independent security and UX review of the round 5 fixes (`f6dc255`, `81ab49f`, `eeb7109`).
-
-Still open, not gate-blocking:
-- U5 main-window reflow at 300%+ (known limitation)
-- U15 (accepted after review H-1), ST-6, ST-7 (info)
-- U12 and smoke check 16 on real Windows 10
-- P6 (owner decision)
+- Run smoke check 12 (crash, debug build) and 16 (Windows 10), plus High Contrast and Narrator passes.
+- Phase 8 if performance matters (the worker polls every 100 ms).
+- Before 2027-04-09: revisit R1 (code signing).
