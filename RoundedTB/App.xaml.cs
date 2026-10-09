@@ -16,14 +16,51 @@ namespace RoundedTB
         // Brand blue from the app icon. Used instead of the Windows accent colour so the UI matches the icon and banner.
         public static readonly System.Windows.Media.Color BrandAccent = System.Windows.Media.Color.FromRgb(0x32, 0x80, 0xB1);
 
+        private static int crashHandled;
+
         protected override void OnStartup(StartupEventArgs e)
         {
+            // Registered first so a crash anywhere, including MainWindow's constructor, still restores the taskbar
+            DispatcherUnhandledException += (_, args) =>
+            {
+                args.Handled = true;
+                HandleCrash(args.Exception);
+            };
+            AppDomain.CurrentDomain.UnhandledException += (_, args) => HandleCrash(args.ExceptionObject as Exception);
+
             base.OnStartup(e);
             // Match the Windows light/dark setting (each window follows changes via SystemThemeWatcher), but keep the brand accent
             Wpf.Ui.Appearance.ApplicationThemeManager.ApplySystemTheme(false);
             ApplyBrandAccent(Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme());
             // Accent shades depend on light/dark, so recompute them whenever the theme changes
             Wpf.Ui.Appearance.ApplicationThemeManager.Changed += (theme, _) => ApplyBrandAccent(theme);
+        }
+
+        // Without this, Explorer keeps the custom region after a crash (and with auto-hide, an invisible click-through taskbar) until it's restarted
+        private static void HandleCrash(Exception ex)
+        {
+            if (System.Threading.Interlocked.Exchange(ref crashHandled, 1) != 0)
+            {
+                return;
+            }
+            try
+            {
+                RoundedTB.MainWindow.Instance?.RestoreTaskbars();
+            }
+            catch (Exception) { }
+
+            // Only the exception type: messages can contain local paths (and so the username), which end up in bug-report screenshots
+            MessageBox.Show(
+                "ReRoundedTB ran into an unexpected error and has closed. Your taskbar has been put back to normal; if it still looks wrong, restart Windows Explorer from Task Manager.\n\n" +
+                $"Error: {ex?.GetType().Name}",
+                "ReRoundedTB", MessageBoxButton.OK, MessageBoxImage.Error);
+            // The dialog pumps messages, so the worker or the UI may have reshaped the taskbar while it was open; reset again before exiting
+            try
+            {
+                RoundedTB.MainWindow.Instance?.RestoreTaskbars();
+            }
+            catch (Exception) { }
+            Environment.Exit(1);
         }
 
         private static void ApplyBrandAccent(Wpf.Ui.Appearance.ApplicationTheme theme)

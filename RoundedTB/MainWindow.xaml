@@ -44,9 +44,9 @@
         <Grid Grid.Row="1">
 
             <Grid Margin="0,0,10,0" HorizontalAlignment="Right" Width="202" Height="55" VerticalAlignment="Top">
-                <Label x:Name="cornerRadiusLabel" Content="Corner radius" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                <TextBox x:Name="cornerRadiusInput" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" HorizontalAlignment="Left" Width="94" Margin="108,19,0,0" LostFocus="cornerRadiusInput_LostFocus"/>
-                <Slider x:Name="cornerRadiusSlider" Height="10" VerticalAlignment="Top" HorizontalAlignment="Left" Width="84" LargeChange="0" SmallChange="1" Focusable="False" Maximum="48" Orientation="Horizontal" Thumb.DragCompleted="cornerRadiusSlider_DragCompleted" ValueChanged="cornerRadiusSlider_ValueChanged" Margin="0,25,0,0"/>
+                <Label x:Name="cornerRadiusLabel" Content="Corner _radius" Target="{Binding ElementName=cornerRadiusInput}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <TextBox x:Name="cornerRadiusInput" AutomationProperties.Name="Corner radius" AutomationProperties.HelpText="Pixels, 0 or more. The slider goes up to 48; type larger values here" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" HorizontalAlignment="Left" Width="94" Margin="108,19,0,0" LostFocus="cornerRadiusInput_LostFocus"/>
+                <Slider x:Name="cornerRadiusSlider" Height="24" VerticalAlignment="Top" HorizontalAlignment="Left" Width="84" LargeChange="4" SmallChange="1" Maximum="48" AutomationProperties.Name="Corner radius slider" Orientation="Horizontal" Thumb.DragCompleted="cornerRadiusSlider_DragCompleted" ValueChanged="cornerRadiusSlider_ValueChanged" Margin="0,18,0,0"/>
             </Grid>
 
 
@@ -70,33 +70,33 @@
             </Grid>
 
             <Grid Width="202" Height="110" Margin="0,70,10,0" HorizontalAlignment="Right" VerticalAlignment="Top">
-                <Label x:Name="mTopLabel" Content="Top Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94" Margin="0,0,0,0" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-                <TextBox x:Name="mTopInput" HorizontalAlignment="Left" Margin="0,20,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment" LostFocus="mTopInput_LostFocus"/>
+                <Label x:Name="mTopLabel" Content="_Top Margin" Target="{Binding ElementName=mTopInput}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="94" Margin="0,0,0,0" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+                <TextBox x:Name="mTopInput" AutomationProperties.Name="Top margin" AutomationProperties.HelpText="Pixels; negative values attach the taskbar to that edge" HorizontalAlignment="Left" Margin="0,20,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment" LostFocus="mTopInput_LostFocus"/>
 
-                <Label x:Name="mBottomLabel" Content="Bottom Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="108,0,0,0" Width="94" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-                <TextBox x:Name="mBottomInput" HorizontalAlignment="Left" Margin="108,20,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" d:LayoutOverrides="VerticalAlignment" LostFocus="mBottomInput_LostFocus"/>
+                <Label x:Name="mBottomLabel" Content="_Bottom Margin" Target="{Binding ElementName=mBottomInput}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="108,0,0,0" Width="94" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+                <TextBox x:Name="mBottomInput" AutomationProperties.Name="Bottom margin" AutomationProperties.HelpText="Pixels; negative values attach the taskbar to that edge" HorizontalAlignment="Left" Margin="108,20,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" d:LayoutOverrides="VerticalAlignment" LostFocus="mBottomInput_LostFocus"/>
 
-                <Label x:Name="mLeftLabel" Content="Left Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,56,0,0" Width="94" d:LayoutOverrides="HorizontalAlignment"/>
-                <TextBox x:Name="mLeftInput" HorizontalAlignment="Left" Margin="0,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" d:LayoutOverrides="HorizontalAlignment" LostFocus="mLeftInput_LostFocus"/>
+                <Label x:Name="mLeftLabel" Content="_Left Margin" Target="{Binding ElementName=mLeftInput}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,56,0,0" Width="94" d:LayoutOverrides="HorizontalAlignment"/>
+                <TextBox x:Name="mLeftInput" AutomationProperties.Name="Left margin" AutomationProperties.HelpText="Pixels; negative values attach the taskbar to that edge" HorizontalAlignment="Left" Margin="0,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" d:LayoutOverrides="HorizontalAlignment" LostFocus="mLeftInput_LostFocus"/>
 
-                <Label x:Name="mRightLabel" Content="Right Margin" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="108,56,0,0" Width="84"/>
-                <TextBox x:Name="mRightInput" HorizontalAlignment="Left" Margin="108,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" LostFocus="mRightInput_LostFocus"/>
+                <Label x:Name="mRightLabel" Content="R_ight Margin" Target="{Binding ElementName=mRightInput}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="108,56,0,0" Width="84"/>
+                <TextBox x:Name="mRightInput" AutomationProperties.Name="Right margin" AutomationProperties.HelpText="Pixels; negative values attach the taskbar to that edge" HorizontalAlignment="Left" Margin="108,76,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="94" LostFocus="mRightInput_LostFocus"/>
 
             </Grid>
 
             <Grid x:Name="tbDiagramGrid" Margin="10,0,0,0" Height="247" VerticalAlignment="Top" HorizontalAlignment="Left" Width="486">
                 <Rectangle Stroke="#30242424" Fill="#20808080" RadiusX="5" RadiusY="5"/>
                 <ui:Button x:Name="taskbarRectStandIn" HorizontalAlignment="Stretch" Margin="126,0,126,5" VerticalAlignment="Bottom" Click="taskbarRectStandIn_Click" Appearance="Primary" Height="32"/>
-                <ui:Button x:Name="trayRectStandIn" HorizontalAlignment="Stretch" Margin="415,0,5,5" Click="trayRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary"/>
-                <ui:Button x:Name="widgetsRectStandIn" HorizontalAlignment="Stretch" Margin="5,0,415,5" Click="widgetsRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Appearance="Secondary"/>
+                <ui:Button x:Name="trayRectStandIn" HorizontalAlignment="Stretch" Margin="415,0,5,5" Click="trayRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Padding="2,0,2,0" Appearance="Secondary"/>
+                <ui:Button x:Name="widgetsRectStandIn" HorizontalAlignment="Stretch" Margin="5,0,415,5" Click="widgetsRectStandIn_Click" VerticalAlignment="Bottom" Height="32" Padding="2,0,2,0" Appearance="Secondary"/>
 
                 <Label Content="ReRoundedTB" HorizontalAlignment="Center" Margin="0,59,0,108" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="60" Opacity="0.75"/>
                 <Label Content="To begin, select a taskbar segment below." HorizontalAlignment="Center" Margin="0,138,0,75" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="20" Opacity="0.75"/>
             </Grid>
 
             <Grid Margin="0,0,10,83" HorizontalAlignment="Right" Width="133" Height="58" VerticalAlignment="Bottom">
-                <Label Content="Auto-hide" Height="20" VerticalAlignment="Top"/>
-                <ComboBox x:Name="autoHideComboBox" Margin="0,18,0,0" VerticalAlignment="Top">
+                <Label Content="Auto-_hide" Target="{Binding ElementName=autoHideComboBox}" Height="20" VerticalAlignment="Top"/>
+                <ComboBox x:Name="autoHideComboBox" AutomationProperties.Name="Auto-hide" Margin="0,18,0,0" VerticalAlignment="Top">
                     <ComboBoxItem>Always show</ComboBoxItem>
                     <ComboBoxItem>Always hide</ComboBoxItem>
                     <ComboBoxItem>[unavailable]</ComboBoxItem>

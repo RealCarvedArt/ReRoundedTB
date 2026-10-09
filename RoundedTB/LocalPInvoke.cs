@@ -25,6 +25,11 @@ namespace RoundedTB
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, IntPtr lParam);
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr SendMessageTimeout(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam, uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
+
+        public const uint SMTO_ABORTIFHUNG = 0x0002;
+
         [DllImport("user32.dll")]
         public static extern bool PtInRect(ref RECT lprc, POINT pt);
 

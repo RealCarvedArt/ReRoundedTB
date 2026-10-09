@@ -57,11 +57,25 @@ namespace RoundedTB
 
         public class SegmentSettings
         {
+            // Generous bounds (negative margins are a feature) that only exist to stop a hand-edited or corrupt rtb.json from overflowing the region maths
+            public const int MaxCornerRadius = 10000;
+            public const int MinMargin = -10000;
+            public const int MaxMargin = 10000;
+
             public int CornerRadius { get; set; }
             public int MarginTop { get; set; }
             public int MarginLeft { get; set; }
             public int MarginBottom { get; set; }
             public int MarginRight { get; set; }
+
+            public void Clamp()
+            {
+                CornerRadius = Math.Clamp(CornerRadius, 0, MaxCornerRadius);
+                MarginTop = Math.Clamp(MarginTop, MinMargin, MaxMargin);
+                MarginLeft = Math.Clamp(MarginLeft, MinMargin, MaxMargin);
+                MarginBottom = Math.Clamp(MarginBottom, MinMargin, MaxMargin);
+                MarginRight = Math.Clamp(MarginRight, MinMargin, MaxMargin);
+            }
         }
 
         public enum TrayMode

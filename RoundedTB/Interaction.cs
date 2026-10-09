@@ -35,9 +35,9 @@ namespace RoundedTB
                 string jsonSettings = File.ReadAllText(mw.configPath);
                 return JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);
             }
-            catch (Exception ex) when (ex is JsonException || ex is IOException)
+            catch (Exception ex) when (ex is JsonException || ex is IOException || ex is UnauthorizedAccessException)
             {
-                AddLog($"Failed to read config, using defaults: {ex.Message}");
+                AddLog($"Failed to read config, using defaults: {ex.GetType().Name}");
                 return null;
             }
         }
@@ -56,20 +56,27 @@ namespace RoundedTB
         {
             // Write to a temp file and swap it in, so a crash mid-write can't leave an empty/truncated config
             string tempPath = mw.configPath + ".tmp";
-            File.WriteAllText(tempPath, JsonConvert.SerializeObject(mw.activeSettings, Formatting.Indented));
-            if (File.Exists(mw.configPath))
+            try
             {
-                File.Replace(tempPath, mw.configPath, null);
+                File.WriteAllText(tempPath, JsonConvert.SerializeObject(mw.activeSettings, Formatting.Indented));
+                if (File.Exists(mw.configPath))
+                {
+                    File.Replace(tempPath, mw.configPath, null);
+                }
+                else
+                {
+                    File.Move(tempPath, mw.configPath);
+                }
             }
-            else
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
-                File.Move(tempPath, mw.configPath);
+                // e.g. antivirus or an editor holding the file. The settings stay applied in memory and are saved on the next Apply or exit.
+                AddLog($"Failed to save config: {ex.GetType().Name}");
             }
         }
 
         public void FileSystem()
         {
-            File.Create(mw.logPath).Close();
             if (!File.Exists(mw.configPath))
             {
                 if (mw.isWindows11)
@@ -151,16 +158,18 @@ namespace RoundedTB
         }
 
         // Request that TranslucentTB forefully refesh the taskbar
+        // Times out instead of blocking, so a hung TranslucentTB (or Explorer) can't freeze ReRoundedTB or its crash recovery
         public static IntPtr UpdateTranslucentTB(IntPtr taskbarHwnd)
         {
-            return LocalPInvoke.SendMessage(LocalPInvoke.FindWindow("TTB_WorkerWindow", "TTB_WorkerWindow"), LocalPInvoke.RegisterWindowMessage("TTB_ForceRefreshTaskbar"), 0, taskbarHwnd);
+            LocalPInvoke.SendMessageTimeout(LocalPInvoke.FindWindow("TTB_WorkerWindow", "TTB_WorkerWindow"), LocalPInvoke.RegisterWindowMessage("TTB_ForceRefreshTaskbar"), IntPtr.Zero, taskbarHwnd, LocalPInvoke.SMTO_ABORTIFHUNG, 500, out IntPtr result);
+            return result;
         }
-        
+
         // Attempt to forcefully refresh the taskbar
         public static void UpdateLegacyTB(IntPtr taskbarHwnd)
         {
             const int WM_DWMCOMPOSITIONCHANGED = 789;
-            LocalPInvoke.SendMessage(taskbarHwnd, WM_DWMCOMPOSITIONCHANGED, 1, IntPtr.Zero);
+            LocalPInvoke.SendMessageTimeout(taskbarHwnd, WM_DWMCOMPOSITIONCHANGED, new IntPtr(1), IntPtr.Zero, LocalPInvoke.SMTO_ABORTIFHUNG, 1000, out _);
         }
 
         /// <summary>

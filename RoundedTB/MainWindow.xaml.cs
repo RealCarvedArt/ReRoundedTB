@@ -55,8 +55,12 @@ namespace RoundedTB
         ///  3: P3.5 and later (bump this when the About window should show once after an update)
         /// </summary>
 
+        // For the crash handler in App, which may run on a thread that can't use Application.Current.MainWindow
+        public static MainWindow Instance { get; private set; }
+
         public MainWindow()
         {
+            Instance = this;
             InitializeComponent();
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Mica, updateAccents: false);
 
@@ -196,6 +200,16 @@ namespace RoundedTB
             activeSettings.DynamicTrayLayout ??= DefaultLayout();
             activeSettings.DynamicWidgetsLayout ??= DefaultLayout();
 
+            // rtb.json is user-editable, so bring out-of-range values back in range rather than crashing on every start
+            activeSettings.SimpleTaskbarLayout.Clamp();
+            activeSettings.DynamicAppListLayout.Clamp();
+            activeSettings.DynamicTrayLayout.Clamp();
+            activeSettings.DynamicWidgetsLayout.Clamp();
+            if (activeSettings.AutoHide < 0 || activeSettings.AutoHide >= autoHideComboBox.Items.Count)
+            {
+                activeSettings.AutoHide = 0;
+            }
+
             if (version != activeSettings.Version && version != -1)
             {
                 activeSettings.IsNotFirstLaunch = false;
@@ -224,7 +238,7 @@ namespace RoundedTB
             if (activeSettings.IsDynamic)
             {
                 cornerRadiusInput.Text = activeSettings.DynamicAppListLayout.CornerRadius.ToString();
-                cornerRadiusSlider.Value = activeSettings.DynamicAppListLayout.CornerRadius;
+                SetRadiusSliderFromCode(activeSettings.DynamicAppListLayout.CornerRadius);
                 mTopInput.Text = activeSettings.DynamicAppListLayout.MarginTop.ToString();
                 mLeftInput.Text = activeSettings.DynamicAppListLayout.MarginLeft.ToString();
                 mBottomInput.Text = activeSettings.DynamicAppListLayout.MarginBottom.ToString();
@@ -235,7 +249,7 @@ namespace RoundedTB
             else
             {
                 cornerRadiusInput.Text = activeSettings.SimpleTaskbarLayout.CornerRadius.ToString();
-                cornerRadiusSlider.Value = activeSettings.SimpleTaskbarLayout.CornerRadius;
+                SetRadiusSliderFromCode(activeSettings.SimpleTaskbarLayout.CornerRadius);
                 mTopInput.Text = activeSettings.SimpleTaskbarLayout.MarginTop.ToString();
                 mLeftInput.Text = activeSettings.SimpleTaskbarLayout.MarginLeft.ToString();
                 mBottomInput.Text = activeSettings.SimpleTaskbarLayout.MarginBottom.ToString();
@@ -347,6 +361,12 @@ namespace RoundedTB
                 widgetsRectStandIn.Opacity = 1;
             }
 
+            // Name each segment button and its state in text, so it isn't conveyed by opacity alone (screen readers, tooltips)
+            static string SegmentState(bool shown, bool onHover) => !shown ? " (hidden)" : onHover ? " (shown on hover)" : "";
+            SetSegmentLabel(taskbarRectStandIn, activeSettings.IsDynamic ? "App list" : "Taskbar", "");
+            SetSegmentLabel(trayRectStandIn, "Tray", SegmentState(activeSettings.ShowTray, activeSettings.ShowSegmentsOnHover));
+            SetSegmentLabel(widgetsRectStandIn, "Widgets", SegmentState(activeSettings.ShowWidgets, activeSettings.ShowSegmentsOnHover));
+
             if (activeSettings.IsCentred && activeSettings.IsWindows11 && activeSettings.IsDynamic)
             {
                 taskbarRectStandIn.Margin = new Thickness(126, 0, 126, 5);
@@ -366,6 +386,13 @@ namespace RoundedTB
                 widgetsRectStandIn.Visibility = Visibility.Hidden;
 
             }
+        }
+
+        private static void SetSegmentLabel(Wpf.Ui.Controls.Button button, string segment, string state)
+        {
+            button.Content = segment;
+            button.ToolTip = $"Edit the {segment.ToLower()} segment{state}";
+            System.Windows.Automation.AutomationProperties.SetName(button, $"{segment} segment{state}");
         }
 
         public void AutoHide(bool enabled, List<Types.Taskbar> taskbarDetails)
@@ -442,17 +469,37 @@ namespace RoundedTB
             int mb = 0;
             int mr = 0;
 
-
-
+            // When the user clicks Apply, say which box is wrong and put the cursor in it, instead of silently not applying anything.
+            // Startup and the Win+F2 hotkey (sender == null) skip this: they apply the stored settings, which only ever hold in-range values,
+            // and must not pop up a dialog from a hidden window.
+            if (sender != null)
             {
-                if ((!int.TryParse(mTopInput.Text, out mt) && mTopInput.Text != string.Empty)
-                || (!int.TryParse(mLeftInput.Text, out ml) && mLeftInput.Text != string.Empty)
-                || (!int.TryParse(mBottomInput.Text, out mb) && mBottomInput.Text != string.Empty)
-                || (!int.TryParse(mRightInput.Text, out mr) && mRightInput.Text != string.Empty))
+                (System.Windows.Controls.TextBox box, string name, int min, int max)[] fields =
                 {
-                    return;
+                    (cornerRadiusInput, "Corner radius", 0, Types.SegmentSettings.MaxCornerRadius),
+                    (mTopInput, "Top margin", Types.SegmentSettings.MinMargin, Types.SegmentSettings.MaxMargin),
+                    (mBottomInput, "Bottom margin", Types.SegmentSettings.MinMargin, Types.SegmentSettings.MaxMargin),
+                    (mLeftInput, "Left margin", Types.SegmentSettings.MinMargin, Types.SegmentSettings.MaxMargin),
+                    (mRightInput, "Right margin", Types.SegmentSettings.MinMargin, Types.SegmentSettings.MaxMargin),
+                };
+                foreach (var field in fields)
+                {
+                    if (field.box.Text != string.Empty && (!int.TryParse(field.box.Text, out int value) || value < field.min || value > field.max))
+                    {
+                        System.Windows.MessageBox.Show(
+                            $"{field.name} must be a whole number from {field.min} to {field.max}. Nothing was applied.",
+                            "ReRoundedTB", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        field.box.Focus();
+                        field.box.SelectAll();
+                        return;
+                    }
                 }
             }
+
+            int.TryParse(mTopInput.Text, out mt);
+            int.TryParse(mLeftInput.Text, out ml);
+            int.TryParse(mBottomInput.Text, out mb);
+            int.TryParse(mRightInput.Text, out mr);
 
             activeSettings.AutoHide = autoHideComboBox.SelectedIndex;
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
@@ -562,6 +609,43 @@ namespace RoundedTB
             if (!isAlreadyRunning)
             {
                 interaction.WriteJSON();
+            }
+        }
+
+        /// <summary>
+        /// Puts every taskbar back to how Windows draws it. Uses only Win32 calls and plain fields, so the crash handler can call it from any thread.
+        /// </summary>
+        public void RestoreTaskbars()
+        {
+            Types.Settings settings = activeSettings;
+            if (settings == null)
+            {
+                return;
+            }
+
+            try
+            {
+                taskbarThread.CancelAsync();
+            }
+            catch (InvalidOperationException) { }
+            // The worker checks for cancellation about every 100 ms; let it stop so it can't redraw a taskbar after the reset
+            System.Threading.Thread.Sleep(500);
+
+            foreach (Types.Taskbar taskbar in taskbarDetails.ToArray())
+            {
+                try
+                {
+                    Taskbar.ResetTaskbar(taskbar, settings);
+                }
+                catch (Exception) { }
+            }
+            if (settings.AutoHide > 0 && taskbarDetails.Count > 0)
+            {
+                try
+                {
+                    AutoHide(false, taskbarDetails);
+                }
+                catch (Exception) { }
             }
         }
 
@@ -721,6 +805,11 @@ namespace RoundedTB
 
         private void cornerRadiusSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
+            SaveSliderRadius();
+        }
+
+        private void SaveSliderRadius()
+        {
             int check = Convert.ToInt32(Math.Round(cornerRadiusSlider.Value));
             cornerRadiusInput.Text = check.ToString();
 
@@ -840,7 +929,7 @@ namespace RoundedTB
                 selectedSegment = 1;
 
                 cornerRadiusInput.Text = activeSettings.DynamicAppListLayout.CornerRadius.ToString();
-                cornerRadiusSlider.Value = activeSettings.DynamicAppListLayout.CornerRadius;
+                SetRadiusSliderFromCode(activeSettings.DynamicAppListLayout.CornerRadius);
                 mTopInput.Text = activeSettings.DynamicAppListLayout.MarginTop.ToString();
                 mLeftInput.Text = activeSettings.DynamicAppListLayout.MarginLeft.ToString();
                 mBottomInput.Text = activeSettings.DynamicAppListLayout.MarginBottom.ToString();
@@ -851,7 +940,7 @@ namespace RoundedTB
                 selectedSegment = 0;
 
                 cornerRadiusInput.Text = activeSettings.SimpleTaskbarLayout.CornerRadius.ToString();
-                cornerRadiusSlider.Value = activeSettings.SimpleTaskbarLayout.CornerRadius;
+                SetRadiusSliderFromCode(activeSettings.SimpleTaskbarLayout.CornerRadius);
                 mTopInput.Text = activeSettings.SimpleTaskbarLayout.MarginTop.ToString();
                 mLeftInput.Text = activeSettings.SimpleTaskbarLayout.MarginLeft.ToString();
                 mBottomInput.Text = activeSettings.SimpleTaskbarLayout.MarginBottom.ToString();
@@ -871,7 +960,7 @@ namespace RoundedTB
             selectedSegment = 2;
 
             cornerRadiusInput.Text = activeSettings.DynamicTrayLayout.CornerRadius.ToString();
-            cornerRadiusSlider.Value = activeSettings.DynamicTrayLayout.CornerRadius;
+            SetRadiusSliderFromCode(activeSettings.DynamicTrayLayout.CornerRadius);
             mTopInput.Text = activeSettings.DynamicTrayLayout.MarginTop.ToString();
             mLeftInput.Text = activeSettings.DynamicTrayLayout.MarginLeft.ToString();
             mBottomInput.Text = activeSettings.DynamicTrayLayout.MarginBottom.ToString();
@@ -890,7 +979,7 @@ namespace RoundedTB
             selectedSegment = 3;
 
             cornerRadiusInput.Text = activeSettings.DynamicWidgetsLayout.CornerRadius.ToString();
-            cornerRadiusSlider.Value = activeSettings.DynamicWidgetsLayout.CornerRadius;
+            SetRadiusSliderFromCode(activeSettings.DynamicWidgetsLayout.CornerRadius);
             mTopInput.Text = activeSettings.DynamicWidgetsLayout.MarginTop.ToString();
             mLeftInput.Text = activeSettings.DynamicWidgetsLayout.MarginLeft.ToString();
             mBottomInput.Text = activeSettings.DynamicWidgetsLayout.MarginBottom.ToString();
@@ -899,7 +988,7 @@ namespace RoundedTB
 
         private void mTopInput_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (int.TryParse(mTopInput.Text, out int check) && mTopInput.Text != string.Empty)
+            if (int.TryParse(mTopInput.Text, out int check) && check >= Types.SegmentSettings.MinMargin && check <= Types.SegmentSettings.MaxMargin)
             {
                 switch (selectedSegment)
                 {
@@ -927,7 +1016,7 @@ namespace RoundedTB
 
         private void mBottomInput_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (int.TryParse(mBottomInput.Text, out int check) && mBottomInput.Text != string.Empty)
+            if (int.TryParse(mBottomInput.Text, out int check) && check >= Types.SegmentSettings.MinMargin && check <= Types.SegmentSettings.MaxMargin)
             {
                 switch (selectedSegment)
                 {
@@ -955,7 +1044,7 @@ namespace RoundedTB
 
         private void mLeftInput_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (int.TryParse(mLeftInput.Text, out int check) && mLeftInput.Text != string.Empty)
+            if (int.TryParse(mLeftInput.Text, out int check) && check >= Types.SegmentSettings.MinMargin && check <= Types.SegmentSettings.MaxMargin)
             {
                 switch (selectedSegment)
                 {
@@ -983,7 +1072,7 @@ namespace RoundedTB
 
         private void mRightInput_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (int.TryParse(mRightInput.Text, out int check) && mRightInput.Text != string.Empty)
+            if (int.TryParse(mRightInput.Text, out int check) && check >= Types.SegmentSettings.MinMargin && check <= Types.SegmentSettings.MaxMargin)
             {
                 switch (selectedSegment)
                 {
@@ -1011,7 +1100,7 @@ namespace RoundedTB
 
         private void cornerRadiusInput_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (int.TryParse(cornerRadiusInput.Text, out int check) && cornerRadiusInput.Text != string.Empty)
+            if (int.TryParse(cornerRadiusInput.Text, out int check) && check >= 0 && check <= Types.SegmentSettings.MaxCornerRadius)
             {
                 switch (selectedSegment)
                 {
@@ -1035,13 +1124,35 @@ namespace RoundedTB
                         break;
                 }
 
-                cornerRadiusSlider.Value = check;
+                SetRadiusSliderFromCode(check);
+            }
+        }
+
+        // Code that moves the slider has already set the textbox (which may hold more than the slider's maximum of 48), so ValueChanged must ignore it
+        private bool settingRadiusSliderFromCode;
+
+        private void SetRadiusSliderFromCode(int value)
+        {
+            settingRadiusSliderFromCode = true;
+            try
+            {
+                cornerRadiusSlider.Value = value;
+            }
+            finally
+            {
+                settingRadiusSliderFromCode = false;
             }
         }
 
         private void cornerRadiusSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (settingRadiusSliderFromCode)
+            {
+                return;
+            }
             cornerRadiusInput.Text = Math.Round(cornerRadiusSlider.Value).ToString();
+            // Arrow keys and clicks on the track don't raise DragCompleted, so save here too
+            SaveSliderRadius();
         }
     }
 }
