@@ -92,47 +92,7 @@ namespace RoundedTB
         {
             if (!File.Exists(mw.configPath))
             {
-                if (mw.isWindows11)
-                {
-                    mw.activeSettings = new Types.Settings()
-                    {
-                        SimpleTaskbarLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
-                        DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
-                        DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
-                        DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
-                        IsDynamic = false,
-                        IsCentred = false,
-                        IsWindows11 = true,
-                        ShowTray = false,
-                        CompositionCompat = false,
-                        IsNotFirstLaunch = false,
-                        FillOnMaximise = true,
-                        FillOnTaskSwitch = true,
-                        ShowSegmentsOnHover = false,
-                        AutoHide = 0
-                    };
-                }
-                else
-                {
-                    mw.activeSettings = new Types.Settings()
-                    {
-                        SimpleTaskbarLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
-                        DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
-                        DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
-                        DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
-                        IsDynamic = false,
-                        IsCentred = false,
-                        IsWindows11 = false,
-                        ShowTray = false,
-                        CompositionCompat = false,
-                        IsNotFirstLaunch = false,
-                        FillOnMaximise = true,
-                        FillOnTaskSwitch = false,
-                        ShowSegmentsOnHover = false,
-                        AutoHide = 0
-                    };
-                }
-                
+                mw.activeSettings = Types.Settings.CreateDefault(mw.isWindows11);
                 WriteJSON(); // butts - Missy Quarry, 2020
             }
             // An empty or corrupt config is handled by ReadJSON returning null, which applies the OS defaults

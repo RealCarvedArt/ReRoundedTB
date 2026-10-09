@@ -42,6 +42,20 @@ namespace RoundedTB
             public bool FillOnTaskSwitch {  get; set; }
             public bool ShowSegmentsOnHover { get; set; }
             public int AutoHide { get; set; }
+            public bool HasSeenTrayNotice { get; set; }
+
+            public static Settings CreateDefault(bool isWindows11)
+            {
+                var settings = new Settings
+                {
+                    IsWindows11 = isWindows11,
+                    FillOnMaximise = true,
+                    FillOnTaskSwitch = isWindows11, // the task switcher can't be detected on Windows 10
+                };
+                // Normalize fills in the per-segment default layouts
+                settings.Normalize(isWindows11, autoHideOptionCount: 1);
+                return settings;
+            }
 
             /// <summary>
             /// Makes settings read from rtb.json safe to use. The file is user-editable, so out-of-range values are brought back in range

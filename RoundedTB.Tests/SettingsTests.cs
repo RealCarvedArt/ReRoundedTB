@@ -100,6 +100,35 @@ namespace RoundedTB.Tests
             Assert.Equal(2, settings.SimpleTaskbarLayout.MarginTop);
         }
 
+        [Theory]
+        [InlineData(true, 7, 3, true)]
+        [InlineData(false, 16, 2, false)]
+        public void DefaultsMatchThePreviousHardCodedValues(bool isWindows11, int radius, int margin, bool fillOnTaskSwitch)
+        {
+            Types.Settings settings = Types.Settings.CreateDefault(isWindows11);
+
+            foreach (Types.SegmentSettings layout in new[] { settings.SimpleTaskbarLayout, settings.DynamicAppListLayout, settings.DynamicTrayLayout, settings.DynamicWidgetsLayout })
+            {
+                Assert.Equal(radius, layout.CornerRadius);
+                Assert.Equal(margin, layout.MarginTop);
+                Assert.Equal(margin, layout.MarginLeft);
+                Assert.Equal(margin, layout.MarginBottom);
+                Assert.Equal(margin, layout.MarginRight);
+            }
+            Assert.Equal(isWindows11, settings.IsWindows11);
+            Assert.True(settings.FillOnMaximise);
+            Assert.Equal(fillOnTaskSwitch, settings.FillOnTaskSwitch);
+            Assert.False(settings.IsDynamic);
+            Assert.False(settings.IsCentred);
+            Assert.False(settings.ShowTray);
+            Assert.False(settings.ShowWidgets);
+            Assert.False(settings.CompositionCompat);
+            Assert.False(settings.IsNotFirstLaunch);
+            Assert.False(settings.ShowSegmentsOnHover);
+            Assert.False(settings.HasSeenTrayNotice);
+            Assert.Equal(0, settings.AutoHide);
+        }
+
         [Fact]
         public void ValidSettingsRoundTripUnchanged()
         {

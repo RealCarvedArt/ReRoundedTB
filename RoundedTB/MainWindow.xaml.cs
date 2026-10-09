@@ -69,6 +69,15 @@ namespace RoundedTB
             Instance = this;
             InitializeComponent();
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Mica, updateAccents: false);
+            normalBackground = Background;
+            ApplyContrastMode();
+            SystemParameters.StaticPropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(SystemParameters.HighContrast))
+                {
+                    Dispatcher.Invoke(ApplyContrastMode);
+                }
+            };
 
 
             // Check OS build, as behaviours rather-annoyingly differ between Windows 11 and Windows 10
@@ -162,53 +171,7 @@ namespace RoundedTB
             interaction.AddLog($"ReRoundedTB started!");
             activeSettings = interaction.ReadJSON();
 
-            // Default settings
-            if (activeSettings == null)
-            {
-                
-                if (isWindows11) // Default settings for Windows 11
-                {
-                    activeSettings = new Types.Settings()
-                    {
-                        SimpleTaskbarLayout = new Types.SegmentSettings{ CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
-                        DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
-                        DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
-                        DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 },
-                        IsDynamic = false,
-                        IsCentred = false,
-                        IsWindows11 = true,
-                        ShowTray = false,
-                        ShowWidgets = false,
-                        CompositionCompat = false,
-                        IsNotFirstLaunch = false,
-                        FillOnMaximise = true,
-                        FillOnTaskSwitch = true,
-                        ShowSegmentsOnHover = false,
-                        AutoHide = 0
-                    };
-                }
-                else // Default settings for Windows 10
-                {
-                    activeSettings = new Types.Settings()
-                    {
-                        SimpleTaskbarLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
-                        DynamicAppListLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
-                        DynamicTrayLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
-                        DynamicWidgetsLayout = new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 },
-                        IsDynamic = false,
-                        IsCentred = false,
-                        IsWindows11 = false,
-                        ShowTray = false,
-                        ShowWidgets = false,
-                        CompositionCompat = false,
-                        IsNotFirstLaunch = false,
-                        FillOnMaximise = true,
-                        FillOnTaskSwitch = false,
-                        ShowSegmentsOnHover = false,
-                        AutoHide = 0
-                    };
-                }
-            }
+            activeSettings ??= Types.Settings.CreateDefault(isWindows11);
             activeSettings.IsWindows11 = isWindows11;
 
             activeSettings.Normalize(isWindows11, autoHideComboBox.Items.Count);
@@ -236,30 +199,6 @@ namespace RoundedTB
                 $"FillOnTaskSwitch: {activeSettings.FillOnTaskSwitch}\n" +
                 $"ShowTrayOnHover: {activeSettings.ShowSegmentsOnHover}\n"
                 );
-
-            // Checks if advanced margins are configured
-            if (activeSettings.IsDynamic)
-            {
-                cornerRadiusInput.Text = activeSettings.DynamicAppListLayout.CornerRadius.ToString();
-                SetRadiusSliderFromCode(activeSettings.DynamicAppListLayout.CornerRadius);
-                mTopInput.Text = activeSettings.DynamicAppListLayout.MarginTop.ToString();
-                mLeftInput.Text = activeSettings.DynamicAppListLayout.MarginLeft.ToString();
-                mBottomInput.Text = activeSettings.DynamicAppListLayout.MarginBottom.ToString();
-                mRightInput.Text = activeSettings.DynamicAppListLayout.MarginRight.ToString();
-
-                selectedSegment = 1;
-            }
-            else
-            {
-                cornerRadiusInput.Text = activeSettings.SimpleTaskbarLayout.CornerRadius.ToString();
-                SetRadiusSliderFromCode(activeSettings.SimpleTaskbarLayout.CornerRadius);
-                mTopInput.Text = activeSettings.SimpleTaskbarLayout.MarginTop.ToString();
-                mLeftInput.Text = activeSettings.SimpleTaskbarLayout.MarginLeft.ToString();
-                mBottomInput.Text = activeSettings.SimpleTaskbarLayout.MarginBottom.ToString();
-                mRightInput.Text = activeSettings.SimpleTaskbarLayout.MarginRight.ToString();
-
-                selectedSegment = 0;
-            }
 
             // Get whether or not taskbar is centred
             try
@@ -290,16 +229,7 @@ namespace RoundedTB
                 activeSettings.IsCentred = false;
             }
 
-            // Copy and apply settings to UI
-            dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
-            centredCheckBox.IsChecked = activeSettings.IsCentred;
-            showTrayCheckBox.IsChecked = activeSettings.ShowTray;
-            showWidgetsCheckBox.IsChecked = activeSettings.ShowWidgets;
-            fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
-            fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
-            showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
-            compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
-            autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
+            LoadSettingsIntoUi();
             taskbarDetails = Taskbar.GenerateTaskbarInfo();
 
             ApplyButton_Click(null, null);
@@ -342,6 +272,33 @@ namespace RoundedTB
 
             UpdateUi();
 
+        }
+
+        // Shows activeSettings in the settings window, with the first segment selected
+        private void LoadSettingsIntoUi()
+        {
+            Types.SegmentSettings layout = activeSettings.IsDynamic ? activeSettings.DynamicAppListLayout : activeSettings.SimpleTaskbarLayout;
+            selectedSegment = activeSettings.IsDynamic ? 1 : 0;
+            taskbarRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Primary;
+            trayRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary;
+            widgetsRectStandIn.Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary;
+            cornerRadiusInput.Text = layout.CornerRadius.ToString();
+            SetRadiusSliderFromCode(layout.CornerRadius);
+            mTopInput.Text = layout.MarginTop.ToString();
+            mLeftInput.Text = layout.MarginLeft.ToString();
+            mBottomInput.Text = layout.MarginBottom.ToString();
+            mRightInput.Text = layout.MarginRight.ToString();
+
+            // Order matters: the dynamic and fill-on-maximise handlers change the checkboxes after them
+            dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
+            centredCheckBox.IsChecked = activeSettings.IsCentred;
+            showTrayCheckBox.IsChecked = activeSettings.ShowTray;
+            showWidgetsCheckBox.IsChecked = activeSettings.ShowWidgets;
+            fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
+            fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
+            showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
+            compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
+            autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
         }
 
         public void UpdateUi()
@@ -467,7 +424,9 @@ namespace RoundedTB
         {
             List<Types.Taskbar> taskbars = taskbarDetails; // the worker can swap the list out
             bool taskbarFound = taskbars.Count > 0 && LocalPInvoke.IsWindow(taskbars[0].TaskbarHwnd);
-            string status = taskbarFound ? "ReRoundedTB - active" : "ReRoundedTB - waiting for the taskbar (Explorer may be restarting)";
+            string status = paused ? "ReRoundedTB - paused (normal taskbar)"
+                : taskbarFound ? "ReRoundedTB - active"
+                : "ReRoundedTB - waiting for the taskbar (Explorer may be restarting)";
             if (!hotkeyRegistered)
             {
                 status += "\nWin+F2 isn't available: another app is using it";
@@ -476,7 +435,35 @@ namespace RoundedTB
             {
                 trayIcon.TooltipText = status;
             }
+
+            // TrayDark.ico is a white glyph for a dark taskbar, TrayLight.ico a black one for a light taskbar
+            bool lightTaskbar = IsTaskbarLight();
+            if (trayIconIsLight != lightTaskbar)
+            {
+                trayIconIsLight = lightTaskbar;
+                trayIcon.Icon = new System.Windows.Media.Imaging.BitmapImage(new Uri(lightTaskbar ? "pack://application:,,,/res/TrayLight.ico" : "pack://application:,,,/res/TrayDark.ico"));
+            }
         }
+
+        private bool? trayIconIsLight;
+
+        private static bool IsTaskbarLight()
+        {
+            // The taskbar follows Windows' "mode" setting, not the apps setting
+            using RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            return key?.GetValue("SystemUsesLightTheme") is int value && value == 1;
+        }
+
+        // In High Contrast, drop the translucent backdrop and dimmed text so Windows' contrast colours apply unaltered
+        private void ApplyContrastMode()
+        {
+            bool highContrast = SystemParameters.HighContrast;
+            Background = highContrast ? SystemColors.WindowBrush : normalBackground;
+            headingLabel.Opacity = highContrast ? 1 : 0.75;
+            beginLabel.Opacity = highContrast ? 1 : 0.75;
+        }
+
+        private Brush normalBackground;
 
         private bool hotkeyRegistered = true;
 
@@ -547,11 +534,11 @@ namespace RoundedTB
         }
 
         private bool applying;
+        private bool paused;
 
-        private void ApplyCore(int mt, int ml, int mb, int mr)
+        // Pumps messages while waiting, because the worker uses Dispatcher.Invoke
+        private void StopWorker()
         {
-            // Stop the worker before touching settings or redrawing: it reads and writes activeSettings too (hover mode flips
-            // ShowTray/ShowWidgets) and redraws the same taskbars, so letting both run at once can leave inconsistent regions
             if (taskbarThread.IsBusy)
             {
                 taskbarThread.CancelAsync();
@@ -561,11 +548,65 @@ namespace RoundedTB
                     System.Threading.Thread.Sleep(100);
                 }
             }
+        }
+
+        // Puts the normal taskbar back without quitting; unticking (or Apply) reshapes it again
+        private void PauseMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (PauseMenuItem.IsChecked)
+            {
+                StopWorker();
+                foreach (Types.Taskbar taskbar in taskbarDetails)
+                {
+                    try
+                    {
+                        Taskbar.ResetTaskbar(taskbar, activeSettings);
+                    }
+                    catch (InvalidOperationException) { }
+                }
+                if (activeSettings.AutoHide > 0)
+                {
+                    AutoHide(false, taskbarDetails);
+                }
+                paused = true;
+            }
+            else
+            {
+                ApplyButton_Click(null, null);
+            }
+            TrayIconCheck();
+        }
+
+        private void ResetMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (System.Windows.MessageBox.Show(
+                "Reset all ReRoundedTB settings (corner radius, margins and options) to their defaults?",
+                "ReRoundedTB", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes)
+            {
+                return;
+            }
+            Types.Settings defaults = Types.Settings.CreateDefault(isWindows11);
+            defaults.Version = activeSettings.Version;
+            defaults.IsNotFirstLaunch = true;
+            defaults.HasSeenTrayNotice = activeSettings.HasSeenTrayNotice;
+            activeSettings = defaults;
+            LoadSettingsIntoUi();
+            ApplyButton_Click(null, null);
+        }
+
+        private void ApplyCore(int mt, int ml, int mb, int mr)
+        {
+            // Stop the worker before touching settings or redrawing: it reads and writes activeSettings too (hover mode flips
+            // ShowTray/ShowWidgets) and redraws the same taskbars, so letting both run at once can leave inconsistent regions
+            StopWorker();
             // The wait pumps messages, so the user may have chosen Close meanwhile; don't redraw a taskbar that's just been reset
             if (shouldReallyDieNoReally)
             {
                 return;
             }
+            // Applying (including the Win+F2 hotkey) ends a pause
+            paused = false;
+            PauseMenuItem.IsChecked = false;
 
             activeSettings.AutoHide = autoHideComboBox.SelectedIndex;
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
@@ -621,6 +662,16 @@ namespace RoundedTB
             if (shouldReallyDieNoReally == false)
             {
                 e.Cancel = true;
+                // Closing only hides the window; say so once, so the taskbar staying shaped isn't a surprise
+                if (!activeSettings.HasSeenTrayNotice)
+                {
+                    activeSettings.HasSeenTrayNotice = true;
+                    interaction.WriteJSON();
+                    System.Windows.MessageBox.Show(this,
+                        "ReRoundedTB is still running in the system tray, keeping your taskbar shaped.\n\n" +
+                        "Click its tray icon to open these settings again. To get the normal taskbar back, right-click the icon and choose Pause or Close ReRoundedTB.",
+                        "ReRoundedTB", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
                 Visibility = Visibility.Hidden;
                 ShowMenuItem.Header = "Show ReRoundedTB";
             }
