@@ -36,8 +36,28 @@ namespace RoundedTB
             Wpf.Ui.Appearance.ApplicationThemeManager.ApplySystemTheme(false);
             ApplyBrandAccent(Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme());
             // Accent shades depend on light/dark, so recompute them whenever the theme changes
-            Wpf.Ui.Appearance.ApplicationThemeManager.Changed += (theme, _) => ApplyBrandAccent(theme);
+            Wpf.Ui.Appearance.ApplicationThemeManager.Changed += (theme, _) =>
+            {
+                if (reloadingTheme)
+                {
+                    return;
+                }
+                ApplyBrandAccent(theme);
+                // This event comes after WPF-UI has swapped in the new theme's brushes, and they picked up the old theme's
+                // accent shade (smoke test: light shade with dark-theme black text, 4.30:1). Swap them in again now the accent is right.
+                reloadingTheme = true;
+                try
+                {
+                    Wpf.Ui.Appearance.ApplicationThemeManager.Apply(theme, Wpf.Ui.Controls.WindowBackdropType.Mica, false);
+                }
+                finally
+                {
+                    reloadingTheme = false;
+                }
+            };
         }
+
+        private static bool reloadingTheme;
 
         // Without this, Explorer keeps the custom region after a crash (and with auto-hide, an invisible click-through taskbar) until it's restarted
         private static void HandleCrash(Exception ex)
