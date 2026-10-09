@@ -38,10 +38,14 @@ jobs:
     # Locked mode fails if the package graph differs from packages.lock.json.
     # NuGetAudit (see RoundedTB.csproj) turns any known-vulnerable package into a build error.
     - name: Restore
-      run: dotnet restore RoundedTB\RoundedTB.csproj --locked-mode
+      run: dotnet restore RoundedTB.sln --locked-mode
 
     - name: Build
       run: dotnet build RoundedTB\RoundedTB.csproj -c Release --no-restore
+
+    # Includes the malformed-rtb.json corpus (the settings file is user-editable and loaded on every start)
+    - name: Test
+      run: dotnet test --project RoundedTB.Tests\RoundedTB.Tests.csproj -c Release --no-restore
 
     - name: Locate build output
       id: build
@@ -67,6 +71,22 @@ jobs:
         New-Item -ItemType Directory -Force sbom | Out-Null
         dotnet-CycloneDX RoundedTB\RoundedTB.csproj --output sbom --filename ReRoundedTB.cdx.json --output-format Json --exclude-dev
         if (-not (Test-Path sbom\ReRoundedTB.cdx.json)) { Write-Error 'SBOM was not generated'; exit 1 }
+
+    # Binary hardening (ASLR, DEP, CFG, high-entropy VA, ...): the desktop stand-in for web security-header checks.
+    # The package is pinned by version and by the SHA-512 that nuget.org's catalog lists for it.
+    - name: Check binary hardening (BinSkim)
+      run: |
+        $v = '4.4.9.13'
+        Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.codeanalysis.binskim/$v/microsoft.codeanalysis.binskim.$v.nupkg" -OutFile binskim.zip
+        $expected = '4D39D78C4E2AAC0C83287B5BB0EA55686117A480333CED46FC6E25E52A3A21ED919A9445977CA31181385C387A0DE89B1B8AEFFB1142B4A7707B23A330DD17C8'
+        if ((Get-FileHash binskim.zip -Algorithm SHA512).Hash -ne $expected) { Write-Error 'BinSkim package hash mismatch'; exit 1 }
+        Expand-Archive binskim.zip binskim
+        $dir = '${{ steps.build.outputs.dir }}'
+        binskim\tools\net9.0\win-x64\BinSkim.exe analyze "$dir\ReRoundedTB.exe" "$dir\ReRoundedTB.dll" --output binskim.sarif --log ForceOverwrite
+        $failures = @((Get-Content binskim.sarif -Raw | ConvertFrom-Json).runs[0].results | Where-Object { $_.level -in 'error', 'warning' })
+        $failures | ForEach-Object { "$($_.ruleId): $($_.message.text)" }
+        if ($failures.Count -gt 0) { Write-Error "BinSkim found $($failures.Count) hardening issue(s)"; exit 1 }
+        'BinSkim: no hardening issues'
 
     - name: Upload SBOM
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

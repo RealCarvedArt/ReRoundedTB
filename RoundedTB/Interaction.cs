@@ -31,12 +31,26 @@ namespace RoundedTB
             // Returns null for an empty or corrupt config so the caller falls back to defaults
             try
             {
-                string jsonSettings = File.ReadAllText(mw.configPath);
-                return JsonConvert.DeserializeObject<Types.Settings>(jsonSettings);
+                return ParseSettings(File.ReadAllText(mw.configPath));
             }
-            catch (Exception ex) when (ex is JsonException || ex is IOException || ex is UnauthorizedAccessException)
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
                 AddLog($"Failed to read config, using defaults: {ex.GetType().Name}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Parses rtb.json text. Returns null for empty or corrupt content, so the caller falls back to defaults.
+        /// </summary>
+        public static Types.Settings ParseSettings(string json)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<Types.Settings>(json);
+            }
+            catch (JsonException)
+            {
                 return null;
             }
         }

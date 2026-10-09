@@ -211,24 +211,7 @@ namespace RoundedTB
             }
             activeSettings.IsWindows11 = isWindows11;
 
-            // Configs from R3.1 and earlier have no per-segment layouts, which deserialise as null and crash startup; fill any missing ones with defaults
-            Types.SegmentSettings DefaultLayout() => isWindows11
-                ? new Types.SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 }
-                : new Types.SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 };
-            activeSettings.SimpleTaskbarLayout ??= DefaultLayout();
-            activeSettings.DynamicAppListLayout ??= DefaultLayout();
-            activeSettings.DynamicTrayLayout ??= DefaultLayout();
-            activeSettings.DynamicWidgetsLayout ??= DefaultLayout();
-
-            // rtb.json is user-editable, so bring out-of-range values back in range rather than crashing on every start
-            activeSettings.SimpleTaskbarLayout.Clamp();
-            activeSettings.DynamicAppListLayout.Clamp();
-            activeSettings.DynamicTrayLayout.Clamp();
-            activeSettings.DynamicWidgetsLayout.Clamp();
-            if (activeSettings.AutoHide < 0 || activeSettings.AutoHide >= autoHideComboBox.Items.Count)
-            {
-                activeSettings.AutoHide = 0;
-            }
+            activeSettings.Normalize(isWindows11, autoHideComboBox.Items.Count);
 
             if (version != activeSettings.Version && version != -1)
             {

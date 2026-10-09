@@ -42,6 +42,30 @@ namespace RoundedTB
             public bool FillOnTaskSwitch {  get; set; }
             public bool ShowSegmentsOnHover { get; set; }
             public int AutoHide { get; set; }
+
+            /// <summary>
+            /// Makes settings read from rtb.json safe to use. The file is user-editable, so out-of-range values are brought back in range
+            /// rather than crashing on every start, and configs from R3.1 and earlier (no per-segment layouts) get default layouts.
+            /// </summary>
+            public void Normalize(bool isWindows11, int autoHideOptionCount)
+            {
+                SegmentSettings DefaultLayout() => isWindows11
+                    ? new SegmentSettings { CornerRadius = 7, MarginLeft = 3, MarginTop = 3, MarginRight = 3, MarginBottom = 3 }
+                    : new SegmentSettings { CornerRadius = 16, MarginLeft = 2, MarginTop = 2, MarginRight = 2, MarginBottom = 2 };
+                SimpleTaskbarLayout ??= DefaultLayout();
+                DynamicAppListLayout ??= DefaultLayout();
+                DynamicTrayLayout ??= DefaultLayout();
+                DynamicWidgetsLayout ??= DefaultLayout();
+
+                SimpleTaskbarLayout.Clamp();
+                DynamicAppListLayout.Clamp();
+                DynamicTrayLayout.Clamp();
+                DynamicWidgetsLayout.Clamp();
+                if (AutoHide < 0 || AutoHide >= autoHideOptionCount)
+                {
+                    AutoHide = 0;
+                }
+            }
         }
 
         public class EffectiveRegion

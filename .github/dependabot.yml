@@ -10,7 +10,9 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: nuget
-    directory: /RoundedTB
+    directories:
+      - /RoundedTB
+      - /RoundedTB.Tests
     schedule:
       interval: weekly
 
