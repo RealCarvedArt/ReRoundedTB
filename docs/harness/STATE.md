@@ -25,14 +25,13 @@ Gate values: pending, passed (date), failed (date), retroactive (date).
 | M2 unsigned releases | RealCarvedArt | 2026-10-09 | 2027-04-09 | R1 in `docs/security/threat-register.md` |
 
 ## Next action
-Round 4 is done: L-F5 and U12 (visible split-mode help), plus the review fixes. U15 was reverted after security review H-1 and is now an accepted minor item. U11 and U16 were confirmed already fixed. Round 4 isn't runtime-verified yet: the owner's own ReRoundedTB was running, and COMODO contains test builds.
+The release smoke test ran uncontained on 2026-10-09 (`docs/harness/smoke-2026-10-09.md`): 11 checks pass, 1 not run (crash, covered in round 2), 1 N/A (Win10). It found 5 issues, all fixed and retested on CI builds (audit round 5: light contrast, the accent after a live theme switch, tray Close showing the hide notice, and two Explorer-restart gaps).
 
-Before re-running the phase 7 gate:
-1. Run `docs/release-smoke-test.md` (now 16 checks) on an uncontained build. Checks 2 and 13–16 cover the round 4 changes. The CI build of 4f8ae80 passed check 1 (attestation); its runtime run was COMODO-contained.
-2. Light-theme contrast is now smoke-test check 13. It couldn't be measured here (see audit round 4).
-3. Done: the round 4 reviews (security H-1 led to the U15 revert; the UX lows are fixed).
+Before marking the phase 7 gate passed:
+1. Independent security and UX review of the round 5 fixes (`f6dc255`, `81ab49f`, `eeb7109`).
 
 Still open, not gate-blocking:
 - U5 main-window reflow at 300%+ (known limitation)
-- U12 on real Windows 10
+- U15 (accepted after review H-1), ST-6, ST-7 (info)
+- U12 and smoke check 16 on real Windows 10
 - P6 (owner decision)
