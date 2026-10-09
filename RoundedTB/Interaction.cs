@@ -13,7 +13,6 @@ namespace RoundedTB
     public class Interaction
     {
         public MainWindow mw;
-        string m = "";
 
         public Interaction()
         {
@@ -140,8 +139,7 @@ namespace RoundedTB
 
         public void AddLog(string message)
         {
-            //m = $"[{DateTime.Now}] {message}\n";
-            //File.AppendAllText(mw.logPath, m);
+            // Logging is disabled. Before re-enabling: keep paths/usernames out of messages, cap the file size, and document the file.
         }
 
         public static bool IsTranslucentTBRunning()
@@ -200,9 +198,27 @@ namespace RoundedTB
         // (this is a joke to annoy sylly)
         }
 
+        // A second launch broadcasts this to ask the running instance to show its settings
+        public static readonly int ShowSettingsMessage = LocalPInvoke.RegisterWindowMessage("ReRoundedTB_ShowSettings");
+
         public IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             const int WM_HOTKEY = 0x0312;
+
+            // A WM_SETTEXT carrying the old-style request (sent by newer launches for compatibility) is the same request; keep our title
+            const int WM_SETTEXT = 0x000C;
+            bool isLegacyRequest = msg == WM_SETTEXT && lParam != IntPtr.Zero && Marshal.PtrToStringUni(lParam) == "ReRoundedTB_SettingsRequest";
+
+            if ((ShowSettingsMessage != 0 && msg == ShowSettingsMessage) || isLegacyRequest)
+            {
+                if (mw.Visibility != Visibility.Visible)
+                {
+                    mw.ShowMenuItem_Click(null, null);
+                }
+                mw.Activate();
+                handled = true;
+                return new IntPtr(1);
+            }
 
             switch (msg)
             {

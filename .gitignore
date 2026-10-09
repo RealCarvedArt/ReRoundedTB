@@ -362,3 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /RoundedTB/RoundedTBEmi.ico
+
+# Tool output that can contain local paths and usernames
+*.sarif
+*.clef

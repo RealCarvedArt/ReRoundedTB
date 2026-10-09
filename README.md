@@ -61,7 +61,7 @@ Fixed in ReRoundedTB: dynamic mode not hiding the left side of the taskbar when 
 ## Troubleshooting
 - **Nothing happens to the taskbar and there's no tray icon:** your antivirus may have sandboxed ReRoundedTB. Builds aren't code-signed yet, so tools such as Comodo can auto-contain them, especially on first launch. First [verify the download](#how-do-i-get-it), then allow that specific file in your antivirus. Where your antivirus offers it, trust the file by its hash or signature rather than excluding its folder, so a changed file gets scanned again. Repeat this after each update.
 - **Something breaks badly:** press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd> to open Task Manager, end ReRoundedTB, then restart Windows Explorer. At worst, reboot. ReRoundedTB makes no permanent changes to Windows, so this clears any issues.
-- **Uninstalling:** turn off **Run at startup** in the tray menu, close ReRoundedTB, then delete its folder. Your settings are in `%LOCALAPPDATA%\rtb.json` if you want to remove them too.
+- **Uninstalling:** turn off **Run at startup** in the tray menu, close ReRoundedTB, then delete its folder. Your settings are in `%LOCALAPPDATA%\rtb.json` if you want to remove them too (older versions also left an empty `rtb.log` there).
 
 ## Configuring split mode on Windows 10
 Split mode is a simplified version of dynamic mode for Windows 10, whose taskbar can't be resized automatically. It separates the taskbar from the system tray and lets you resize it by hand, after some setup.
@@ -94,6 +94,12 @@ Releases are built automatically from this repository by GitHub Actions, and eve
 
 **Privacy policy**
 This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+
+What stays on your PC:
+- `%LOCALAPPDATA%\rtb.json` holds your settings (margins, corner radius and options; nothing personal). A `rtb.json.tmp` may be left beside it if the PC loses power mid-save.
+- With **Run at startup** on, a `ReRoundedTB.lnk` shortcut in your Startup folder.
+- To find taskbars, maximised windows and the task switcher, ReRoundedTB looks at other windows' class names, positions and states while it runs. It doesn't read their titles or contents, and stores none of it.
+- It has no telemetry, update check or network code. The only links it opens are the GitHub pages in its Help window, and only when you click them.
 
 ## Credits and licence
 ReRoundedTB is based on [RoundedTB](https://github.com/torchgm/RoundedTB), created by torchgm. Parts of this README are adapted from RoundedTB's documentation. Like RoundedTB, ReRoundedTB is free software under the [GNU General Public License v3.0](LICENSE).

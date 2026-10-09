@@ -6,12 +6,15 @@
         xmlns:local="clr-namespace:RoundedTB"
         mc:Ignorable="d"
         Title="Infobox" Height="430" Width="500"
-        xmlns:ui="http://schemas.modernwpf.com/2019"
         Visibility ="Visible" ResizeMode="NoResize" Opacity="1.001">
     <Grid>
-        <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="37" Click="okButton_Click"/>
+        <!-- Enter and Esc both close it -->
+        <Button x:Name="okButton" Content="OK" Margin="0,0,10,10" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="85" MinHeight="32" IsDefault="True" IsCancel="True" Click="okButton_Click"/>
         <TextBlock x:Name="titleBlock" HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" Text="InformationTitle" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" FontSize="14"/>
-        <TextBlock x:Name="bodyBlock" Margin="10,34,10,47" TextWrapping="Wrap" Text="Body of information that's quite interesting. Honestly I'm not sure how you found this as it should never appear in normal use. Are you peeking through the source? I really wouldn't recommend that tbh" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14"/>
+        <!-- Scrolls instead of clipping when the text doesn't fit -->
+        <ScrollViewer Margin="10,34,10,52" VerticalScrollBarVisibility="Auto" Focusable="True" AutomationProperties.Name="Details">
+            <TextBlock x:Name="bodyBlock" TextWrapping="Wrap" Text="Body of information that's quite interesting. Honestly I'm not sure how you found this as it should never appear in normal use. Are you peeking through the source? I really wouldn't recommend that tbh" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14"/>
+        </ScrollViewer>
 
     </Grid>
 </Window>

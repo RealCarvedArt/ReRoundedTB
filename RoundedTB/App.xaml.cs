@@ -18,6 +18,9 @@ namespace RoundedTB
 
         private static int crashHandled;
 
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern int MessageBoxW(IntPtr hWnd, string text, string caption, uint type);
+
         protected override void OnStartup(StartupEventArgs e)
         {
             // Registered first so a crash anywhere, including MainWindow's constructor, still restores the taskbar
@@ -49,11 +52,14 @@ namespace RoundedTB
             }
             catch (Exception) { }
 
-            // Only the exception type: messages can contain local paths (and so the username), which end up in bug-report screenshots
-            MessageBox.Show(
+            // Only the exception type: messages can contain local paths (and so the username), which end up in bug-report screenshots.
+            // Native MessageBox so it can be topmost and in front: the app usually has no visible window to own it, and a smoke test
+            // showed WPF's MessageBox opening behind other windows.
+            const uint MB_ICONERROR = 0x10, MB_SETFOREGROUND = 0x10000, MB_TOPMOST = 0x40000;
+            MessageBoxW(IntPtr.Zero,
                 "ReRoundedTB ran into an unexpected error and has closed. Your taskbar has been put back to normal; if it still looks wrong, restart Windows Explorer from Task Manager.\n\n" +
                 $"Error: {ex?.GetType().Name}",
-                "ReRoundedTB", MessageBoxButton.OK, MessageBoxImage.Error);
+                "ReRoundedTB", MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
             // The dialog pumps messages, so the worker or the UI may have reshaped the taskbar while it was open; reset again before exiting
             try
             {

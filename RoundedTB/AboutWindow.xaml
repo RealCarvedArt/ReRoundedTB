@@ -31,7 +31,7 @@
             <Bold>Thanks for downloading ReRoundedTB. Expand the following categories for more information.</Bold>
         </TextBlock>
 
-        <ScrollViewer Margin="0,176,0,0" VerticalScrollBarVisibility="Hidden" Height="378" VerticalAlignment="Top">
+        <ScrollViewer Margin="0,176,0,0" VerticalScrollBarVisibility="Auto" Height="378" VerticalAlignment="Top">
             <StackPanel Width="473">
                 <Expander x:Name="expander0" Header="What's new" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>

@@ -58,6 +58,12 @@ namespace RoundedTB
         // For the crash handler in App, which may run on a thread that can't use Application.Current.MainWindow
         public static MainWindow Instance { get; private set; }
 
+        // Held for the life of the process; its existence is what tells a second launch that we're running
+        private static System.Threading.Mutex instanceMutex;
+
+        // This window's handle, readable from the worker thread
+        public IntPtr MainHwnd { get; private set; }
+
         public MainWindow()
         {
             Instance = this;
@@ -84,28 +90,42 @@ namespace RoundedTB
             background = new Background();
             interaction = new Interaction();
 
-            // Check if RoundedTB is already running, and if it is, do nothing.
-            Process[] matchingProcesses = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
-            
-            if (matchingProcesses.Length > 1)
+            // Check if ReRoundedTB is already running, and if it is, ask it to show its settings and exit.
+            // The session-local mutex is the real check; the process name catches versions from before the mutex existed.
+            bool isFirstInstance;
+            try
             {
-                List<IntPtr> windowList = Interaction.GetTopLevelWindows();
-                foreach (IntPtr hwnd in windowList)
+                instanceMutex = new System.Threading.Mutex(true, @"Local\ReRoundedTB.Instance", out isFirstInstance);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Another process holds the name with an ACL we can't open, so something is already there
+                isFirstInstance = false;
+            }
+            // Only count copies in this Windows session; another signed-in user's copy shouldn't block this one
+            int sessionId = Process.GetCurrentProcess().SessionId;
+            int runningHere = Array.FindAll(Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName), p => p.SessionId == sessionId).Length;
+            if (!isFirstInstance || runningHere > 1)
+            {
+                // Posted, not sent, so a busy or hung instance can't stall this one
+                LocalPInvoke.PostMessage(LocalPInvoke.HWND_BROADCAST, Interaction.ShowSettingsMessage, IntPtr.Zero, IntPtr.Zero);
+
+                // Older versions instead watch their own window title for a settings request
+                foreach (IntPtr hwnd in Interaction.GetTopLevelWindows())
                 {
                     StringBuilder windowClass = new StringBuilder(1024);
-                    StringBuilder windowTitle = new StringBuilder(1024);
-                    try
+                    LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
+                    // WPF window classes are "HwndWrapper[<process name>;;<guid>]". Only read the title of our own windows, never other apps'.
+                    if (!windowClass.ToString().Contains("HwndWrapper[ReRoundedTB;"))
                     {
-                        LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
-                        LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
-
-                        // WPF window classes are "HwndWrapper[<process name>;;<guid>]"
-                        if (windowClass.ToString().Contains("HwndWrapper[ReRoundedTB;") && windowTitle.ToString() == "ReRoundedTB")
-                        {
-                            LocalPInvoke.SetWindowText(hwnd, "ReRoundedTB_SettingsRequest");
-                        }
+                        continue;
                     }
-                    catch (Exception) { }
+                    StringBuilder windowTitle = new StringBuilder(1024);
+                    LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
+                    if (windowTitle.ToString() == "ReRoundedTB")
+                    {
+                        LocalPInvoke.SendMessageTimeout(hwnd, LocalPInvoke.WM_SETTEXT, IntPtr.Zero, "ReRoundedTB_SettingsRequest", LocalPInvoke.SMTO_ABORTIFHUNG, 1000, out _);
+                    }
                 }
                 shouldReallyDieNoReally = true;
                 isAlreadyRunning = true;
@@ -130,7 +150,7 @@ namespace RoundedTB
 
             if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName)))
             {
-                StartupCheckBox.IsChecked = true;
+                StartupMenuItem.IsChecked = true;
                 ShowMenuItem.Header = "Show ReRoundedTB";
             }
             taskbarThread.WorkerSupportsCancellation = true;
@@ -345,7 +365,7 @@ namespace RoundedTB
         {
             if (!activeSettings.ShowTray || activeSettings.ShowSegmentsOnHover)
             {
-                trayRectStandIn.Opacity = 0.5;
+                trayRectStandIn.Opacity = DimmedSegmentOpacity;
             }
             else
             {
@@ -354,18 +374,14 @@ namespace RoundedTB
 
             if (!activeSettings.ShowWidgets || activeSettings.ShowSegmentsOnHover)
             {
-                widgetsRectStandIn.Opacity = 0.5;
+                widgetsRectStandIn.Opacity = DimmedSegmentOpacity;
             }
             else
             {
                 widgetsRectStandIn.Opacity = 1;
             }
 
-            // Name each segment button and its state in text, so it isn't conveyed by opacity alone (screen readers, tooltips)
-            static string SegmentState(bool shown, bool onHover) => !shown ? " (hidden)" : onHover ? " (shown on hover)" : "";
-            SetSegmentLabel(taskbarRectStandIn, activeSettings.IsDynamic ? "App list" : "Taskbar", "");
-            SetSegmentLabel(trayRectStandIn, "Tray", SegmentState(activeSettings.ShowTray, activeSettings.ShowSegmentsOnHover));
-            SetSegmentLabel(widgetsRectStandIn, "Widgets", SegmentState(activeSettings.ShowWidgets, activeSettings.ShowSegmentsOnHover));
+            UpdateSegmentLabels();
 
             if (activeSettings.IsCentred && activeSettings.IsWindows11 && activeSettings.IsDynamic)
             {
@@ -388,11 +404,27 @@ namespace RoundedTB
             }
         }
 
+        // Hidden segments are dimmed; at 0.65 their text measures about 6:1 contrast on the dark theme (0.5 was 4.3:1, under WCAG's 4.5:1)
+        private const double DimmedSegmentOpacity = 0.65;
+
+        // Name each segment button and its state in text, so it isn't conveyed by opacity or colour alone (screen readers, tooltips)
+        private void UpdateSegmentLabels()
+        {
+            static string SegmentState(bool shown, bool onHover) => !shown ? " (hidden)" : onHover ? " (shown on hover)" : "";
+            SetSegmentLabel(taskbarRectStandIn, activeSettings.IsDynamic ? "App list" : "Taskbar", "");
+            SetSegmentLabel(trayRectStandIn, "Tray", SegmentState(activeSettings.ShowTray, activeSettings.ShowSegmentsOnHover));
+            SetSegmentLabel(widgetsRectStandIn, "Widgets", SegmentState(activeSettings.ShowWidgets, activeSettings.ShowSegmentsOnHover));
+        }
+
         private static void SetSegmentLabel(Wpf.Ui.Controls.Button button, string segment, string state)
         {
+            // The selected segment is the Primary (accent-coloured) one; bold text and an item status say so without relying on colour
+            bool selected = button.Appearance == Wpf.Ui.Controls.ControlAppearance.Primary;
             button.Content = segment;
+            button.FontWeight = selected ? FontWeights.Bold : FontWeights.Normal;
             button.ToolTip = $"Edit the {segment.ToLower()} segment{state}";
-            System.Windows.Automation.AutomationProperties.SetName(button, $"{segment} segment{state}");
+            System.Windows.Automation.AutomationProperties.SetName(button, $"{segment} segment{state}{(selected ? ", selected" : "")}");
+            System.Windows.Automation.AutomationProperties.SetItemStatus(button, selected ? "Selected" : "");
         }
 
         public void AutoHide(bool enabled, List<Types.Taskbar> taskbarDetails)
@@ -447,9 +479,23 @@ namespace RoundedTB
             }
         }
 
+        // Called about once a second: the tray tooltip says what ReRoundedTB is doing, so a taskbar that looks wrong isn't a mystery
         public void TrayIconCheck()
         {
+            List<Types.Taskbar> taskbars = taskbarDetails; // the worker can swap the list out
+            bool taskbarFound = taskbars.Count > 0 && LocalPInvoke.IsWindow(taskbars[0].TaskbarHwnd);
+            string status = taskbarFound ? "ReRoundedTB - active" : "ReRoundedTB - waiting for the taskbar (Explorer may be restarting)";
+            if (!hotkeyRegistered)
+            {
+                status += "\nWin+F2 isn't available: another app is using it";
+            }
+            if (trayIcon.TooltipText != status)
+            {
+                trayIcon.TooltipText = status;
+            }
         }
+
+        private bool hotkeyRegistered = true;
 
         private void trayIcon_LeftClick(Wpf.Ui.Tray.Controls.NotifyIcon sender, RoutedEventArgs e)
         {
@@ -501,6 +547,43 @@ namespace RoundedTB
             int.TryParse(mBottomInput.Text, out mb);
             int.TryParse(mRightInput.Text, out mr);
 
+            // The wait below pumps messages, so a second click (or the hotkey) could re-enter Apply mid-way
+            if (applying)
+            {
+                return;
+            }
+            applying = true;
+            try
+            {
+                ApplyCore(mt, ml, mb, mr);
+            }
+            finally
+            {
+                applying = false;
+            }
+        }
+
+        private bool applying;
+
+        private void ApplyCore(int mt, int ml, int mb, int mr)
+        {
+            // Stop the worker before touching settings or redrawing: it reads and writes activeSettings too (hover mode flips
+            // ShowTray/ShowWidgets) and redraws the same taskbars, so letting both run at once can leave inconsistent regions
+            if (taskbarThread.IsBusy)
+            {
+                taskbarThread.CancelAsync();
+                while (taskbarThread.IsBusy)
+                {
+                    System.Windows.Forms.Application.DoEvents();
+                    System.Threading.Thread.Sleep(100);
+                }
+            }
+            // The wait pumps messages, so the user may have chosen Close meanwhile; don't redraw a taskbar that's just been reset
+            if (shouldReallyDieNoReally)
+            {
+                return;
+            }
+
             activeSettings.AutoHide = autoHideComboBox.SelectedIndex;
             activeSettings.IsDynamic = (bool)dynamicCheckBox.IsChecked;
             activeSettings.IsCentred = Taskbar.CheckIfCentred(isWindows11);
@@ -532,20 +615,8 @@ namespace RoundedTB
             }
 
 
-            if (taskbarThread.IsBusy == false)
-            {
-                taskbarThread.RunWorkerAsync((mt, ml, mb, mr, 0));
-            }
-            else
-            {
-                taskbarThread.CancelAsync();
-                while (taskbarThread.IsBusy == true)
-                {
-                    System.Windows.Forms.Application.DoEvents();
-                    System.Threading.Thread.Sleep(100);
-                }
-                taskbarThread.RunWorkerAsync((mt, ml, mb, mr, 0));
-            }
+            taskbarThread.RunWorkerAsync((mt, ml, mb, mr, 0));
+
 
             if (activeSettings.AutoHide < 1)
             {
@@ -558,7 +629,6 @@ namespace RoundedTB
             interaction.WriteJSON();
             TrayIconCheck();
             UpdateUi();
-
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -683,18 +753,37 @@ namespace RoundedTB
 
         private void Startup_Clicked(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("Startup toggled");
-            if (System.IO.File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName)))
+            string link = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName);
+            // Follow what the user asked for (the item's new checked state), not whether the file happens to exist
+            bool wanted = StartupMenuItem.IsChecked;
+            bool ok = true;
+            if (wanted)
             {
-                System.IO.File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup), StartupLinkName));
+                ok = EnableStartup();
             }
             else
             {
-                EnableStartup();
+                try
+                {
+                    System.IO.File.Delete(link);
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    ok = false;
+                }
+            }
+
+            // Always show the real state, so the tick can't disagree with what's on disk
+            StartupMenuItem.IsChecked = System.IO.File.Exists(link);
+            if (!ok)
+            {
+                System.Windows.MessageBox.Show(
+                    wanted ? "ReRoundedTB couldn't add itself to your startup apps." : "ReRoundedTB couldn't remove itself from your startup apps.",
+                    "ReRoundedTB", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
-        public void EnableStartup()
+        public bool EnableStartup()
         {
             try
             {
@@ -713,9 +802,11 @@ namespace RoundedTB
                 shortcut.Arguments = "";
                 shortcut.Description = "Start ReRoundedTB";
                 shortcut.Save();
+                return true;
             }
             catch (Exception)
             {
+                return false;
             }
         }
 
@@ -743,28 +834,6 @@ namespace RoundedTB
             }
             catch (Exception)
             {
-            }
-        }
-
-        private void DebugMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            IntPtr hwndNext = LocalPInvoke.FindWindowExA(taskbarDetails[0].TaskbarHwnd, IntPtr.Zero, "Start", null);
-            List<IntPtr> floatingMilkshakesBitsOfTaskbar = new List<IntPtr>();
-            floatingMilkshakesBitsOfTaskbar.Add(hwndNext);
-            while (true) 
-            {
-                hwndNext = LocalPInvoke.FindWindowExA(taskbarDetails[0].TaskbarHwnd, hwndNext, null, null);
-                if (floatingMilkshakesBitsOfTaskbar.Contains(hwndNext))
-                {
-                    break;
-                }
-                floatingMilkshakesBitsOfTaskbar.Add(hwndNext);
-
-            }
-            foreach (IntPtr hwnd in floatingMilkshakesBitsOfTaskbar)
-            {
-                LocalPInvoke.GetWindowRect(hwnd, out LocalPInvoke.RECT rect);
-                LocalPInvoke.MoveWindow(hwnd, rect.Left + 50, rect.Top, (rect.Right + 50) - (rect.Left + 50), rect.Bottom - rect.Top, true);
             }
         }
 
@@ -843,10 +912,12 @@ namespace RoundedTB
 
 
             IntPtr handle = new WindowInteropHelper(this).Handle;
+            MainHwnd = handle;
             source = HwndSource.FromHwnd(handle);
             source.AddHook(interaction.HwndHook);
-            bool wtf = LocalPInvoke.RegisterHotKey(handle, 9000, 0x8, 0x71);
-            Debug.WriteLine("KEY: " + wtf);
+            // Fails if another app already owns Win+F2; the tray tooltip then says so
+            hotkeyRegistered = LocalPInvoke.RegisterHotKey(handle, 9000, 0x8, 0x71);
+            Debug.WriteLine("KEY: " + hotkeyRegistered);
             Debug.WriteLine(handle);
             Debug.WriteLine((int)Types.KeyModifier.WinKey);
             Debug.WriteLine(System.Windows.Forms.Keys.J.GetHashCode());
@@ -946,6 +1017,7 @@ namespace RoundedTB
                 mBottomInput.Text = activeSettings.SimpleTaskbarLayout.MarginBottom.ToString();
                 mRightInput.Text = activeSettings.SimpleTaskbarLayout.MarginRight.ToString();
             }
+            UpdateSegmentLabels();
         }
 
         private void trayRectStandIn_Click(object sender, RoutedEventArgs e)
@@ -965,6 +1037,7 @@ namespace RoundedTB
             mLeftInput.Text = activeSettings.DynamicTrayLayout.MarginLeft.ToString();
             mBottomInput.Text = activeSettings.DynamicTrayLayout.MarginBottom.ToString();
             mRightInput.Text = activeSettings.DynamicTrayLayout.MarginRight.ToString();
+            UpdateSegmentLabels();
         }
 
         private void widgetsRectStandIn_Click(object sender, RoutedEventArgs e)
@@ -984,6 +1057,7 @@ namespace RoundedTB
             mLeftInput.Text = activeSettings.DynamicWidgetsLayout.MarginLeft.ToString();
             mBottomInput.Text = activeSettings.DynamicWidgetsLayout.MarginBottom.ToString();
             mRightInput.Text = activeSettings.DynamicWidgetsLayout.MarginRight.ToString();
+            UpdateSegmentLabels();
         }
 
         private void mTopInput_LostFocus(object sender, RoutedEventArgs e)

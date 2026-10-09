@@ -44,30 +44,21 @@ namespace RoundedTB
                         infrequentCount++;
                         if (infrequentCount == 10)
                         {
-                            // Check to see if settings need to be shown
-                            List<IntPtr> windowList = Interaction.GetTopLevelWindows();
-                            foreach (IntPtr hwnd in windowList)
+                            // Older versions ask for the settings window by renaming ours with SetWindowText, which from another
+                            // process changes the caption without sending us WM_SETTEXT, so check our own title (only ours)
+                            StringBuilder ownTitle = new StringBuilder(64);
+                            LocalPInvoke.InternalGetWindowText(mw.MainHwnd, ownTitle, 64);
+                            if (ownTitle.ToString() == "ReRoundedTB_SettingsRequest")
                             {
-                                StringBuilder windowClass = new StringBuilder(1024);
-                                StringBuilder windowTitle = new StringBuilder(1024);
-                                try
+                                mw.Dispatcher.Invoke(() =>
                                 {
-                                    LocalPInvoke.GetClassName(hwnd, windowClass, 1024);
-                                    LocalPInvoke.GetWindowText(hwnd, windowTitle, 1024);
-
-                                    if (windowClass.ToString().Contains("HwndWrapper[ReRoundedTB;") && windowTitle.ToString() == "ReRoundedTB_SettingsRequest")
+                                    LocalPInvoke.SetWindowText(mw.MainHwnd, "ReRoundedTB");
+                                    if (mw.Visibility != Visibility.Visible)
                                     {
-                                        mw.Dispatcher.Invoke(() =>
-                                        {
-                                            if (mw.Visibility != Visibility.Visible)
-                                            {
-                                                mw.ShowMenuItem_Click(null, null);
-                                            }
-                                        });
-                                        LocalPInvoke.SetWindowText(hwnd, "ReRoundedTB");
+                                        mw.ShowMenuItem_Click(null, null);
                                     }
-                                }
-                                catch (Exception) { }
+                                    mw.Activate();
+                                });
                             }
 
                             // Update tray icon
@@ -190,10 +181,10 @@ namespace RoundedTB
                                 //Debug.WriteLine($"Taskbar opacity:  {taskbarOpacity}");
                                 if (isHoveringOverTaskbar && taskbarOpacity == 1)
                                 {
-                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE);
                                     if ((style & LocalPInvoke.WS_EX_TRANSPARENT) == LocalPInvoke.WS_EX_TRANSPARENT)
                                     {
-                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_TRANSPARENT);
+                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, style & ~LocalPInvoke.WS_EX_TRANSPARENT);
                                     }
                                     LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 63, LocalPInvoke.LWA_ALPHA);
                                     System.Threading.Thread.Sleep(animSpeed);
@@ -215,10 +206,10 @@ namespace RoundedTB
                                     LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 63, LocalPInvoke.LWA_ALPHA);
                                     System.Threading.Thread.Sleep(animSpeed);
                                     LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 1, LocalPInvoke.LWA_ALPHA);
-                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE);
                                     if ((style & LocalPInvoke.WS_EX_TRANSPARENT) != LocalPInvoke.WS_EX_TRANSPARENT)
                                     {
-                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_TRANSPARENT);
+                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, style | LocalPInvoke.WS_EX_TRANSPARENT);
                                     }
                                     taskbars[current].Ignored = true;
                                     taskbars[current].TaskbarHidden = true;
@@ -232,10 +223,10 @@ namespace RoundedTB
                                 LocalPInvoke.GetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, out _, out taskbarOpacity, out _);
                                 if (taskbarOpacity < 255)
                                 {
-                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32();
+                                    int style = LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE);
                                     if ((style & LocalPInvoke.WS_EX_TRANSPARENT) == LocalPInvoke.WS_EX_TRANSPARENT)
                                     {
-                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, LocalPInvoke.GetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE).ToInt32() ^ LocalPInvoke.WS_EX_TRANSPARENT);
+                                        LocalPInvoke.SetWindowLong(taskbars[current].TaskbarHwnd, LocalPInvoke.GWL_EXSTYLE, style & ~LocalPInvoke.WS_EX_TRANSPARENT);
                                     }
                                     LocalPInvoke.SetLayeredWindowAttributes(taskbars[current].TaskbarHwnd, 0, 63, LocalPInvoke.LWA_ALPHA);
                                     System.Threading.Thread.Sleep(animSpeed);

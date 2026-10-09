@@ -22,13 +22,19 @@ namespace RoundedTB
         [DllImport("user32.dll")]
         public static extern bool RedrawWindow(IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, RedrawWindowFlags flags);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, IntPtr lParam);
-
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SendMessageTimeout(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam, uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
 
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "SendMessageTimeoutW")]
+        public static extern IntPtr SendMessageTimeout(IntPtr hWnd, int Msg, IntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool PostMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
         public const uint SMTO_ABORTIFHUNG = 0x0002;
+        public const int WM_SETTEXT = 0x000C;
+        public static readonly IntPtr HWND_BROADCAST = new IntPtr(0xFFFF);
 
         [DllImport("user32.dll")]
         public static extern bool PtInRect(ref RECT lprc, POINT pt);
@@ -36,9 +42,6 @@ namespace RoundedTB
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        public static extern int GetWindowRgn(IntPtr hWnd, out IntPtr hRgn);
 
         [DllImport("user32.dll")]
         public static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
@@ -88,9 +91,6 @@ namespace RoundedTB
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetCursorPos(out POINT lpPoint);
 
-        [DllImport("user32.dll")]
-        public static extern int ShowWindow(int hwnd, int command);
-
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SystemParametersInfo(int uiAction, int uiParam, ref RECT pvParam, int fWinIni);
@@ -119,6 +119,10 @@ namespace RoundedTB
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
+        // Reads a caption without sending WM_GETTEXT, so it can't block on a busy UI thread
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int InternalGetWindowText(IntPtr hWnd, StringBuilder pString, int cchMaxCount);
+
         [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
 
@@ -140,8 +144,9 @@ namespace RoundedTB
         [DllImport("user32.dll")]
         public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        // GetWindowLong returns a 32-bit LONG; declaring it IntPtr made ToInt32() read undefined upper bits on x64
         [DllImport("user32.dll")]
-        public static extern IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
+        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetLayeredWindowAttributes(IntPtr hwnd, out uint crKey, out byte bAlpha, out uint dwFlags);
