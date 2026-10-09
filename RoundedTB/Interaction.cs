@@ -194,6 +194,14 @@ namespace RoundedTB
                 return new IntPtr(1);
             }
 
+            // Light/dark mode changes arrive as a setting change; refresh the tray icon here too, because the
+            // worker's once-a-second check doesn't run while paused (not handled, so WPF still sees the message)
+            const int WM_SETTINGCHANGE = 0x001A;
+            if (msg == WM_SETTINGCHANGE)
+            {
+                mw.TrayIconCheck();
+            }
+
             switch (msg)
             {
                 case WM_HOTKEY:

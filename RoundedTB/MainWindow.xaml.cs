@@ -138,7 +138,7 @@ namespace RoundedTB
                 }
                 shouldReallyDieNoReally = true;
                 isAlreadyRunning = true;
-                // Closing a window from its constructor makes StartupUri's Show() throw, so exit outright.
+                // Closing a window from its constructor breaks the startup code that creates it, so exit outright.
                 // Nothing has been applied to the taskbar yet.
                 Environment.Exit(0);
                 return;
@@ -911,7 +911,8 @@ namespace RoundedTB
             if (!isWindows11)
             {
                 splitHelpButton.Visibility = Visibility.Visible;
-                if (Opacity > 0.5)
+                // Only when the user ticks it, not while settings load at startup
+                if (IsVisible)
                 {
                     splitHelpButton_Click(null, null);
                 }
@@ -984,8 +985,12 @@ namespace RoundedTB
             Debug.WriteLine(handle);
             Debug.WriteLine((int)Types.KeyModifier.WinKey);
             Debug.WriteLine(System.Windows.Forms.Keys.J.GetHashCode());
-            Visibility = Visibility.Hidden;
-            Opacity = 1;
+
+            // WPF-UI only registers the tray icon when the window first renders, and this window starts hidden
+            if (!trayIcon.IsRegistered)
+            {
+                trayIcon.Register();
+            }
         }
 
         private void splitHelpButton_Click(object sender, RoutedEventArgs e)
@@ -999,7 +1004,7 @@ namespace RoundedTB
 
         private void compositionFixCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            if (Opacity > 0.01)
+            if (IsVisible)
             {
                 Infobox ib = new Infobox();
                 ib.Height = 450;

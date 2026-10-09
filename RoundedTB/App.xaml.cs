@@ -37,6 +37,11 @@ namespace RoundedTB
             ApplyBrandAccent(Wpf.Ui.Appearance.ApplicationThemeManager.GetAppTheme());
             // Accent shades depend on light/dark, so recompute them whenever the theme changes
             Wpf.Ui.Appearance.ApplicationThemeManager.Changed += (theme, _) => ApplyBrandAccent(theme);
+
+            // The settings window starts hidden. It still needs a window handle for the tray icon, the Win+F2 hotkey and
+            // "show settings" requests, so create one without showing the window (no invisible window flashing past Alt+Tab)
+            MainWindow window = new MainWindow();
+            new System.Windows.Interop.WindowInteropHelper(window).EnsureHandle();
         }
 
         // Without this, Explorer keeps the custom region after a crash (and with auto-hide, an invisible click-through taskbar) until it's restarted

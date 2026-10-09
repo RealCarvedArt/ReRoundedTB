@@ -25,15 +25,14 @@ Gate values: pending, passed (date), failed (date), retroactive (date).
 | M2 unsigned releases | RealCarvedArt | 2026-10-09 | 2027-04-09 | R1 in `docs/security/threat-register.md` |
 
 ## Next action
-Round 3 is done (tests and BinSkim in CI, ASVS target, M2 accepted as R1, U8, U10).
+Round 4 is done: U15 (no invisible startup window), L-F5, and U12 (visible split-mode help). U11 and U16 were confirmed already fixed. Round 4 isn't runtime-verified yet: the owner's own ReRoundedTB was running, and COMODO contains test builds.
 
 Before re-running the phase 7 gate:
-1. Run `docs/release-smoke-test.md` on an uncontained build. This is the runtime evidence that COMODO containment blocked here.
-2. Measure light-theme contrast.
+1. Run `docs/release-smoke-test.md` (now 14 checks) on an uncontained build. Checks 2, 13 and 14 cover the round 4 changes.
+2. Light-theme contrast is now smoke-test check 13. It couldn't be measured here (see audit round 4).
+3. An independent reviewer pass on the round 4 diff.
 
 Still open, not gate-blocking:
-- U5 main-window reflow at 300%+
-- U12 on Win10
-- L-F5
-- U11, U15, U16 minor items
+- U5 main-window reflow at 300%+ (known limitation)
+- U12 on real Windows 10
 - P6 (owner decision)

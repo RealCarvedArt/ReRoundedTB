@@ -12,9 +12,6 @@
         Title="ReRoundedTB" Height="458" Width="718"
         Background="#20808080"
         d:Background="DarkGray"
-        Visibility = "Visible"
-        Opacity="0.001"
-        d:Opacity="1"
         ResizeMode="NoResize"
         >
     <!--169, 393-->
@@ -64,7 +61,6 @@
             <CheckBox x:Name="showWidgetsCheckBox" TabIndex="6" Content="Show this segment" Margin="0,210,44,0" VerticalAlignment="Top" HorizontalAlignment="Right" Visibility="Hidden"/>
 
             <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
-            <Button x:Name="splitHelpButton" Opacity="0.001" Content="Click me!" IsTabStop="False" AutomationProperties.Name="Split mode help"  Margin="107,122,0,0" Click="splitHelpButton_Click"  Height="32" Width="94" VerticalAlignment="Top" FontWeight="Normal" FontFamily="Segoe UI Semibold" Visibility="Hidden"/>
 
             <Grid KeyboardNavigation.TabIndex="7" KeyboardNavigation.TabNavigation="Local" Width="555" Margin="15,0,0,4" HorizontalAlignment="Left" Height="124" VerticalAlignment="Bottom">
                 <CheckBox x:Name="showSegmentsOnHoverCheckBox" TabIndex="13" Content="Show the tray and widgets only when the mouse is over them (uses more CPU)" Margin="0,0,0,0" VerticalAlignment="Top" Checked="showSegmentsOnHoverCheckBox_Checked" Unchecked="showSegmentsOnHoverCheckBox_Unchecked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
@@ -96,6 +92,8 @@
 
                 <Label x:Name="headingLabel" Content="ReRoundedTB" HorizontalAlignment="Center" Margin="0,59,0,108" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="60" Opacity="0.75"/>
                 <Label x:Name="beginLabel" Content="To begin, select a taskbar segment below." HorizontalAlignment="Center" Margin="0,138,0,75" FontFamily="Segoe UI Variable Display" FontWeight="SemiBold" FontSize="20" Opacity="0.75"/>
+                <!-- Windows 10 split mode only: a visible, focusable way back to the setup steps (it used to be an invisible click target) -->
+                <ui:Button x:Name="splitHelpButton" TabIndex="4" Appearance="Secondary" Content="Split mode help" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,175,0,0" Height="30" Padding="12,0,12,0" FontWeight="Normal" Click="splitHelpButton_Click" Visibility="Hidden"/>
             </Grid>
 
             <Grid KeyboardNavigation.TabIndex="8" KeyboardNavigation.TabNavigation="Local" Margin="0,0,10,83" HorizontalAlignment="Right" Width="133" Height="58" VerticalAlignment="Bottom">
