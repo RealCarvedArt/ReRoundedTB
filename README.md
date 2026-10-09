@@ -16,7 +16,11 @@ ReRoundedTB is a maintained fork of [RoundedTB](https://github.com/torchgm/Round
 
 **Switching from RoundedTB:** close RoundedTB from its tray icon first. ReRoundedTB won't start while RoundedTB is running, so the two don't fight over the taskbar. Settings from RoundedTB P3.2 or later (including the RoundedTB-named 3.7.0) carry over fully. With settings from RoundedTB R3.1 or earlier, the dynamic mode setting carries over, but margins and corner radius go back to the defaults.
 
-**Verifying a download:** releases are built by GitHub Actions with signed build provenance. To check a download came from this repository, run `gh attestation verify <file> --repo RealCarvedArt/ReRoundedTB` with the [GitHub CLI](https://cli.github.com/).
+**Verifying a download:** releases are built by GitHub Actions with signed build provenance. To check a download was built from this repository's `master` branch by its release workflow, run this with the [GitHub CLI](https://cli.github.com/):
+
+```
+gh attestation verify <file> --repo RealCarvedArt/ReRoundedTB --source-ref refs/heads/master --signer-workflow RealCarvedArt/ReRoundedTB/.github/workflows/ci.yml
+```
 
 ## To use
 The preview at the top of the settings window shows your taskbar's segments. Click a segment to edit it, change the values, then click **Apply**.
@@ -55,7 +59,7 @@ The **Help** button opens the About window, where the **Debug** section can open
 Fixed in ReRoundedTB: dynamic mode not hiding the left side of the taskbar when the alignment has never been changed ([#98](https://github.com/torchgm/RoundedTB/issues/98)), dynamic mode cutting off icons on current Windows 11, second-monitor taskbars disappearing in dynamic mode, the taskbar going square after running for a while, and taskbars staying square after Explorer restarts.
 
 ## Troubleshooting
-- **Nothing happens to the taskbar and there's no tray icon:** your antivirus may have sandboxed ReRoundedTB. Builds aren't code-signed yet, so tools such as Comodo can auto-contain them, especially on first launch. Add `ReRoundedTB.exe` to your antivirus's trusted files.
+- **Nothing happens to the taskbar and there's no tray icon:** your antivirus may have sandboxed ReRoundedTB. Builds aren't code-signed yet, so tools such as Comodo can auto-contain them, especially on first launch. First [verify the download](#how-do-i-get-it), then allow that specific file in your antivirus. Where your antivirus offers it, trust the file by its hash or signature rather than excluding its folder, so a changed file gets scanned again. Repeat this after each update.
 - **Something breaks badly:** press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd> to open Task Manager, end ReRoundedTB, then restart Windows Explorer. At worst, reboot. ReRoundedTB makes no permanent changes to Windows, so this clears any issues.
 - **Uninstalling:** turn off **Run at startup** in the tray menu, close ReRoundedTB, then delete its folder. Your settings are in `%LOCALAPPDATA%\rtb.json` if you want to remove them too.
 

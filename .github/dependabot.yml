@@ -1,0 +1,20 @@
+# Keeps the SHA-pinned actions, NuGet packages (and packages.lock.json) and the global.json SDK current
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: nuget
+    directory: /RoundedTB
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: dotnet-sdk
+    directory: /
+    schedule:
+      interval: weekly

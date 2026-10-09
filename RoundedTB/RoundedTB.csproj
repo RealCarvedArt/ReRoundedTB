@@ -31,6 +31,14 @@
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <!-- Supply chain: pin the resolved package graph (CI restores in locked mode) and fail the build on any known-vulnerable package -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
+    <!-- In CI (GitHub Actions sets CI=true), also fail when vulnerability data couldn't be checked, so an audit outage can't pass silently -->
+    <WarningsAsErrors Condition="'$(CI)' == 'true'">$(WarningsAsErrors);NU1900;NU1905</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>RoundedTB.ico</ApplicationIcon>

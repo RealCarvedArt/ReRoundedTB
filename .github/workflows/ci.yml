@@ -6,20 +6,21 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Least privilege: the build only needs to read the repo
+# Least privilege: jobs only get the token scopes they list below
 permissions:
   contents: read
 
 jobs:
+  # Builds untrusted code (any branch or PR), so it gets a read-only token and no signing or attestation rights
   build:
     name: build-windows
     runs-on: windows-2022
     timeout-minutes: 30
     permissions:
       contents: read
-      actions: read         # SignPath downloads the unsigned artifact from this run
-      id-token: write       # sign build provenance via GitHub's OIDC token
-      attestations: write   # store the provenance attestation
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+      artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
 
     steps:
     # Actions are pinned to full commit SHAs so a moved tag can't change what runs
@@ -28,19 +29,19 @@ jobs:
       with:
         persist-credentials: false
 
+    # The SDK version comes from global.json so CI and local builds use the same toolchain
     - name: Set up .NET
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
-        dotnet-version: 10.0.x
+        global-json-file: global.json
+
+    # Locked mode fails if the package graph differs from packages.lock.json.
+    # NuGetAudit (see RoundedTB.csproj) turns any known-vulnerable package into a build error.
+    - name: Restore
+      run: dotnet restore RoundedTB\RoundedTB.csproj --locked-mode
 
     - name: Build
-      run: dotnet build RoundedTB\RoundedTB.csproj -c Release
-
-    - name: Check for vulnerable packages
-      run: |
-        $out = dotnet list RoundedTB\RoundedTB.csproj package --vulnerable --include-transitive
-        $out
-        if ($out -match 'has the following vulnerable packages') { exit 1 }
+      run: dotnet build RoundedTB\RoundedTB.csproj -c Release --no-restore
 
     - name: Locate build output
       id: build
@@ -51,32 +52,128 @@ jobs:
         "version=$version" >> $env:GITHUB_OUTPUT
         "Build output: $dir (version $version)"
 
-    # Code signing via SignPath Foundation. Skipped until the repository variable SIGNPATH_ORGANIZATION_ID is set
-    # (plus SIGNPATH_PROJECT_SLUG, SIGNPATH_SIGNING_POLICY_SLUG and the secret SIGNPATH_API_TOKEN). See .signpath/README.md.
-    - name: Upload unsigned build for signing
+    # Uploaded before any third-party tool (the SBOM generator below) runs, so that tool can't alter what gets signed and attested
+    - name: Upload unsigned build
       id: upload-unsigned
-      if: vars.SIGNPATH_ORGANIZATION_ID != '' && github.event_name != 'pull_request'
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: unsigned-${{ github.sha }}
         path: ${{ steps.build.outputs.dir }}\*
 
+    # CycloneDX writes nothing (and still exits 0) if the output folder is missing, so create it and check the file
+    - name: Generate SBOM
+      run: |
+        dotnet tool install --global CycloneDX --version 6.2.0
+        New-Item -ItemType Directory -Force sbom | Out-Null
+        dotnet-CycloneDX RoundedTB\RoundedTB.csproj --output sbom --filename ReRoundedTB.cdx.json --output-format Json --exclude-dev
+        if (-not (Test-Path sbom\ReRoundedTB.cdx.json)) { Write-Error 'SBOM was not generated'; exit 1 }
+
+    - name: Upload SBOM
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: sbom-${{ github.sha }}
+        path: sbom\ReRoundedTB.cdx.json
+
+  # Scans the full git history for committed secrets
+  secrets:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    # Pinned binary, verified against a hard-coded checksum, instead of a third-party action that needs a token
+    - name: Install gitleaks
+      run: |
+        curl -sSfL -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+        echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tar.gz" | sha256sum --check --strict
+        tar -xzf gitleaks.tar.gz gitleaks
+        rm gitleaks.tar.gz
+
+    - name: Scan history
+      run: ./gitleaks git --redact --no-banner --verbose .
+
+  # Static analysis; results appear under the repository's Security > Code scanning tab
+  codeql:
+    name: codeql
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+      with:
+        languages: csharp
+        build-mode: none
+        queries: security-extended
+
+    - name: Analyze
+      uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+      with:
+        category: /language:csharp
+
+  # Signs, attests and packages a release build. Runs only for master, never for PRs or other branches,
+  # so only code that reached master can get a provenance attestation that passes the README's verify command.
+  release:
+    name: release
+    needs: [build, secrets, codeql]
+    if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+    runs-on: windows-2022
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read         # SignPath downloads the unsigned artifact from this run
+      id-token: write       # sign build provenance via GitHub's OIDC token
+      attestations: write   # store the provenance and SBOM attestations
+
+    steps:
+    - name: Download unsigned build
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: unsigned-${{ github.sha }}
+        path: unsigned
+
+    - name: Download SBOM
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: sbom-${{ github.sha }}
+        path: sbom
+
+    # Code signing via SignPath Foundation. Skipped until the repository variable SIGNPATH_ORGANIZATION_ID is set
+    # (plus SIGNPATH_PROJECT_SLUG, SIGNPATH_SIGNING_POLICY_SLUG and the secret SIGNPATH_API_TOKEN). See .signpath/README.md.
     - name: Sign with SignPath
-      if: steps.upload-unsigned.outcome == 'success'
+      id: sign
+      if: vars.SIGNPATH_ORGANIZATION_ID != ''
       uses: SignPath/github-action-submit-signing-request@f6d04783b4569d051e0c80105fe66e82819d0092 # v3.0
       with:
         api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
         organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
         project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
         signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
-        github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+        github-artifact-id: ${{ needs.build.outputs.artifact-id }}
         parameters: |
-          version: "${{ steps.build.outputs.version }}"
+          version: "${{ needs.build.outputs.version }}"
         wait-for-completion: true
         output-artifact-directory: signed
 
     - name: Check signatures
-      if: steps.upload-unsigned.outcome == 'success'
+      if: steps.sign.outcome == 'success'
       run: |
         foreach ($f in 'signed\ReRoundedTB.exe', 'signed\ReRoundedTB.dll') {
           $sig = Get-AuthenticodeSignature $f
@@ -86,14 +183,13 @@ jobs:
 
     - name: Package
       run: |
-        $src = if (Test-Path signed\ReRoundedTB.exe) { (Resolve-Path signed).Path } else { '${{ steps.build.outputs.dir }}' }
+        $src = if (Test-Path signed\ReRoundedTB.exe) { (Resolve-Path signed).Path } else { (Resolve-Path unsigned).Path }
         "Packaging from $src"
         Compress-Archive -Path "$src\*" -DestinationPath ReRoundedTB.zip
         Copy-Item "$src\ReRoundedTB.exe", "$src\ReRoundedTB.dll" .
 
-    # Lets anyone confirm a download was built from this repo: gh attestation verify <file> --repo <owner>/<repo>
+    # Lets anyone confirm a download was built from master by this workflow (see README for the exact command)
     - name: Attest build provenance
-      if: github.event_name != 'pull_request'
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
       with:
         subject-path: |
@@ -101,8 +197,16 @@ jobs:
           ReRoundedTB.exe
           ReRoundedTB.dll
 
+    - name: Attest SBOM
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+      with:
+        subject-path: ReRoundedTB.zip
+        sbom-path: sbom/ReRoundedTB.cdx.json
+
     - name: Upload artifacts
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: rertb-${{ github.sha }}
-        path: ReRoundedTB.zip
+        path: |
+          ReRoundedTB.zip
+          sbom/ReRoundedTB.cdx.json
