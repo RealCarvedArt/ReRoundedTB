@@ -22,6 +22,7 @@ Gate values: pending, passed (date), failed (date), retroactive (date).
 ## Accepted risks
 | Finding | Accepted by | Date | Expires | Logged in threat register |
 |---|---|---|---|---|
+| M2 unsigned releases | RealCarvedArt | 2026-10-09 | 2027-04-09 | R1 in `docs/security/threat-register.md` |
 
 ## Next action
 Round-2 fixes are done and re-verified (see the audit's "Remediation round 2"). Still open:
