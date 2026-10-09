@@ -175,6 +175,9 @@ namespace RoundedTB
         // A second launch broadcasts this to ask the running instance to show its settings
         public static readonly int ShowSettingsMessage = LocalPInvoke.RegisterWindowMessage("ReRoundedTB_ShowSettings");
 
+        // Broadcast by Explorer when it (re)creates the taskbar
+        public static readonly int TaskbarCreatedMessage = LocalPInvoke.RegisterWindowMessage("TaskbarCreated");
+
         public IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             const int WM_HOTKEY = 0x0312;
@@ -192,6 +195,21 @@ namespace RoundedTB
                 mw.Activate();
                 handled = true;
                 return new IntPtr(1);
+            }
+
+            // Explorer restarted: its new taskbar has no tray icons, and WPF-UI doesn't re-add ours, which would leave
+            // no Pause/Close (smoke test 2026-10-09). Not handled, so other listeners still see it.
+            if (TaskbarCreatedMessage != 0 && msg == TaskbarCreatedMessage)
+            {
+                try
+                {
+                    mw.trayIcon.Register();
+                    mw.TrayIconCheck();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("Re-adding the tray icon failed: " + ex.GetType().Name);
+                }
             }
 
             // Light/dark mode changes arrive as a setting change; refresh the tray icon here too, because the

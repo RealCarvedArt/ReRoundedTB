@@ -14,6 +14,7 @@ namespace RoundedTB
         public MainWindow mw;
         bool redrawOverride = false;
         int infrequentCount = 0;
+        int settleRedraws = 0;
 
         public Background()
         {
@@ -92,10 +93,19 @@ namespace RoundedTB
                             // Forcefully reset taskbars if the taskbar count or main taskbar handle has changed
                             taskbars = RegenerateTaskbars();
                             Debug.WriteLine("Regenerating taskbar info");
+                            // A freshly started Explorer can replace the region with a plain rectangle a second or so after we
+                            // shape it, and nothing here would notice (the rects don't change). Keep redrawing for a while.
+                            settleRedraws = 10;
                         }
 
                         bool redrawThisPass = redrawOverride;
                         redrawOverride = false;
+                        if (settleRedraws > 0 && infrequentCount == 0)
+                        {
+                            // About once a second, for about 10 seconds
+                            settleRedraws--;
+                            redrawThisPass = true;
+                        }
                         for (int current = 0; current < taskbars.Count; current++)
                         {
                             if (taskbars[current].TaskbarHwnd == IntPtr.Zero || taskbars[current].AppListHwnd == IntPtr.Zero)
