@@ -41,19 +41,39 @@ namespace RoundedTB
 
         private static bool TryGetXamlAppListRect(IntPtr taskbarHwnd, out LocalPInvoke.RECT rect)
         {
+            if (taskbarFrames.TryGetValue(taskbarHwnd, out AutomationElement cachedFrame))
+            {
+                if (TryMeasureFrame(cachedFrame, out rect))
+                {
+                    return true;
+                }
+                // Explorer can rebuild the taskbar's XAML (e.g. after sleep or a display change). The old frame can stay alive
+                // without reporting any buttons, so drop it and look the frame up again instead of falling back for good
+                taskbarFrames.TryRemove(taskbarHwnd, out _);
+            }
+
             rect = new LocalPInvoke.RECT();
             try
             {
-                if (!taskbarFrames.TryGetValue(taskbarHwnd, out AutomationElement frame))
+                AutomationElement frame = AutomationElement.FromHandle(taskbarHwnd).FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, "TaskbarFrame"));
+                if (frame == null || !TryMeasureFrame(frame, out rect))
                 {
-                    frame = AutomationElement.FromHandle(taskbarHwnd).FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, "TaskbarFrame"));
-                    if (frame == null)
-                    {
-                        return false;
-                    }
-                    taskbarFrames[taskbarHwnd] = frame;
+                    return false;
                 }
+                taskbarFrames[taskbarHwnd] = frame;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
+        private static bool TryMeasureFrame(AutomationElement frame, out LocalPInvoke.RECT rect)
+        {
+            rect = new LocalPInvoke.RECT();
+            try
+            {
                 // Fetch all the properties we need in one cross-process call, as this runs every loop
                 CacheRequest cacheRequest = new CacheRequest();
                 cacheRequest.Add(AutomationElement.ClassNameProperty);
@@ -70,7 +90,7 @@ namespace RoundedTB
                 foreach (AutomationElement child in children)
                 {
                     Rect bounds = child.Cached.BoundingRectangle;
-                    string className = child.Cached.ClassName;
+                    string className = child.Cached.ClassName ?? "";
                     // The tray and widgets are separate segments, and the images are tray glyphs
                     if (className.StartsWith("SystemTray.") || className == "Image" || child.Cached.AutomationId == "WidgetsButton" || child.Cached.IsOffscreen || bounds.IsEmpty || bounds.Width <= 0)
                     {
@@ -97,8 +117,7 @@ namespace RoundedTB
             }
             catch (Exception)
             {
-                // The cached frame dies when Explorer restarts; drop it so it's looked up again
-                taskbarFrames.TryRemove(taskbarHwnd, out _);
+                // The frame dies when Explorer restarts; the caller drops it and looks it up again
                 return false;
             }
         }
