@@ -102,6 +102,7 @@ What stays on your PC:
 - With **Run at startup** on, a `ReRoundedTB.lnk` shortcut in your Startup folder.
 - To find taskbars, maximised windows and the task switcher, ReRoundedTB looks at other windows' class names, positions and states while it runs. It doesn't read their titles or contents, and stores none of it.
 - It has no telemetry, update check or network code. The only links it opens are the GitHub pages in its Help window, and only when you click them.
+- If it ever crashes, Windows itself may note the error in its Event Viewer and, if Windows Error Reporting is turned on, send a report to Microsoft. That's Windows' standard crash handling, controlled by your Windows privacy settings; ReRoundedTB doesn't add or send anything itself.
 
 ## Credits and licence
 ReRoundedTB is based on [RoundedTB](https://github.com/torchgm/RoundedTB), created by torchgm. Parts of this README are adapted from RoundedTB's documentation. Like RoundedTB, ReRoundedTB is free software under the [GNU General Public License v3.0](LICENSE).

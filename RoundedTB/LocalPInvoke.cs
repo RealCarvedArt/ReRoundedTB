@@ -32,6 +32,10 @@ namespace RoundedTB
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool PostMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool AllowSetForegroundWindow(int dwProcessId);
+
         public const uint SMTO_ABORTIFHUNG = 0x0002;
         public const int WM_SETTEXT = 0x000C;
         public static readonly IntPtr HWND_BROADCAST = new IntPtr(0xFFFF);

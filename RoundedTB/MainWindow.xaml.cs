@@ -69,6 +69,14 @@ namespace RoundedTB
             Instance = this;
             InitializeComponent();
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.Mica, updateAccents: false);
+            IsVisibleChanged += (_, e) =>
+            {
+                if ((bool)e.NewValue)
+                {
+                    FitToWorkArea();
+                }
+            };
+            DpiChanged += (_, _) => FitToWorkArea();
             normalBackground = Background;
             ApplyContrastMode();
             SystemParameters.StaticPropertyChanged += (_, e) =>
@@ -116,6 +124,17 @@ namespace RoundedTB
             int runningHere = Array.FindAll(Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName), p => p.SessionId == sessionId).Length;
             if (!isFirstInstance || runningHere > 1)
             {
+                // This launch has the foreground (the user just started it); pass that on to the running copy so its settings
+                // window comes to the front instead of opening behind the active app. Only to our own processes in this session.
+                int ownId = Environment.ProcessId;
+                foreach (Process other in Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName))
+                {
+                    if (other.Id != ownId && other.SessionId == sessionId)
+                    {
+                        LocalPInvoke.AllowSetForegroundWindow(other.Id);
+                    }
+                }
+
                 // Posted, not sent, so a busy or hung instance can't stall this one
                 LocalPInvoke.PostMessage(LocalPInvoke.HWND_BROADCAST, Interaction.ShowSettingsMessage, IntPtr.Zero, IntPtr.Zero);
 
@@ -480,6 +499,39 @@ namespace RoundedTB
         }
 
         private Brush normalBackground;
+
+        private const double DesignWidth = 718;
+        private const double DesignHeight = 458;
+
+        // At large display scaling (or on a small screen) the fixed-size window can be bigger than the screen. Shrink it to the
+        // work area of its monitor; the content then scrolls (U5). At normal sizes this leaves the window exactly as designed.
+        private void FitToWorkArea()
+        {
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            if (hwnd == IntPtr.Zero)
+            {
+                return;
+            }
+            System.Drawing.Rectangle area = Screen.FromHandle(hwnd).WorkingArea;
+            DpiScale dpi = VisualTreeHelper.GetDpi(this);
+            double areaLeft = area.Left / dpi.DpiScaleX;
+            double areaTop = area.Top / dpi.DpiScaleY;
+            double areaWidth = area.Width / dpi.DpiScaleX;
+            double areaHeight = area.Height / dpi.DpiScaleY;
+
+            Width = Math.Min(DesignWidth, areaWidth);
+            Height = Math.Min(DesignHeight, areaHeight);
+
+            // Pull it back on screen if it now hangs off an edge (Left/Top are NaN until Windows has placed the window)
+            if (!double.IsNaN(Left) && (Left < areaLeft || Left + Width > areaLeft + areaWidth))
+            {
+                Left = areaLeft + (areaWidth - Width) / 2;
+            }
+            if (!double.IsNaN(Top) && (Top < areaTop || Top + Height > areaTop + areaHeight))
+            {
+                Top = areaTop + (areaHeight - Height) / 2;
+            }
+        }
 
         private bool hotkeyRegistered = true;
 
