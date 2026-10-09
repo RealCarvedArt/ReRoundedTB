@@ -7,6 +7,8 @@ ReRoundedTB keeps everything on the device. It has no telemetry, no update check
 | Data item | Source | Purpose | Storage | Retention | Who can read | PII? | Needed? |
 |---|---|---|---|---|---|---|---|
 | Settings (per-segment corner radius and margins, mode flags, AutoHide, etc.) | `Types.cs:29-65`, `Interaction.cs:30-68` | Keep the user's taskbar configuration | `%LOCALAPPDATA%\rtb.json` (name shared with upstream RoundedTB for migration) | Until the user deletes it; not removed automatically | User, admins, SYSTEM | No | Yes (`IsCentred` and `IsWindows11` are redundant) |
+| "Seen the tray notice" flag (`HasSeenTrayNotice` in rtb.json) | `Types.cs`, `MainWindow.xaml.cs` (OnClosing) | Show the "still running in the tray" notice only once | `%LOCALAPPDATA%\rtb.json` | As settings | As settings | No | Yes |
+| Registry read: `SystemUsesLightTheme` (HKCU `Themes\Personalize`) | `MainWindow.xaml.cs` (`IsTaskbarLight`) | Pick a tray icon that's visible on the taskbar | Memory | Read about once a second | Process | No | Yes |
 | Settings temp file | `Interaction.cs:58-66` | Atomic save | `%LOCALAPPDATA%\rtb.json.tmp` | Transient; may be left behind after a crash | As above | No | Yes |
 | Log file | removed | No longer created (P3 fixed). Older versions left an empty `%LOCALAPPDATA%\rtb.log` | n/a | n/a | n/a | No | No |
 | Startup shortcut (opt-in) | `MainWindow.xaml.cs:613-663` | Run at logon | `%APPDATA%\...\Startup\ReRoundedTB.lnk` | Until toggled off | User, admins | Target path may include the username | Yes |

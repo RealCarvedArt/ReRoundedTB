@@ -25,11 +25,15 @@ Gate values: pending, passed (date), failed (date), retroactive (date).
 | M2 unsigned releases | RealCarvedArt | 2026-10-09 | 2027-04-09 | R1 in `docs/security/threat-register.md` |
 
 ## Next action
-Round-2 fixes are done and re-verified (see the audit's "Remediation round 2"). Still open:
-- M2 signing (waiting on SignPath reputation; the Microsoft Store/MSIX route is an alternative)
-- U5 main-window reflow (known limitation)
-- U12 on Win10
-- U8, U10, U11, U15, U16 (not in this round's scope)
-- P6 (owner decision)
+Round 3 is done (tests and BinSkim in CI, ASVS target, M2 accepted as R1, U8, U10).
 
-Then re-run the phase 7 gate.
+Before re-running the phase 7 gate:
+1. Run `docs/release-smoke-test.md` on an uncontained build. This is the runtime evidence that COMODO containment blocked here.
+2. Measure light-theme contrast.
+
+Still open, not gate-blocking:
+- U5 main-window reflow at 300%+
+- U12 on Win10
+- L-F5
+- U11, U15, U16 minor items
+- P6 (owner decision)
