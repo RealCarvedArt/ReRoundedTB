@@ -76,7 +76,8 @@ namespace RoundedTB
                     FitToWorkArea();
                 }
             };
-            DpiChanged += (_, _) => FitToWorkArea();
+            // WPF applies Windows' suggested size after raising DpiChanged, so fit afterwards (security review SR6-2)
+            DpiChanged += (_, _) => Dispatcher.BeginInvoke(FitToWorkArea, DispatcherPriority.Loaded);
             normalBackground = Background;
             ApplyContrastMode();
             SystemParameters.StaticPropertyChanged += (_, e) =>

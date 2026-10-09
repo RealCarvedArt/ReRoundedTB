@@ -21,4 +21,4 @@ ReRoundedTB keeps everything on the device. It has no telemetry, no update check
 | TranslucentTB IPC (mutex probe and refresh message) | `Interaction.cs:140-157` | Compatibility refresh (opt-in) | None | n/a | Local TranslucentTB | No | Yes |
 | Global hotkey Win+F2 | `MainWindow.xaml.cs:759` | Toggle the tray segment | None | n/a | Process | No (not a keylogger) | Yes |
 | Outbound links (github.com) | `AboutWindow.xaml:110-117` | Help and docs | Opened in the default browser on click | n/a | GitHub (normal browser request) | Browser IP/UA, user-initiated | Yes |
-| Crash reports | none in the app; OS WER / Event Log | OS default | Windows | OS policy | Admins; Microsoft if WER upload is enabled | Possibly paths in stack traces | OS-controlled; disclosed in the README "What stays on your PC" (P6, done) |
+| Crash reports | none in the app; OS WER / Event Log | OS default | Windows | OS policy | Users signed in to the PC (the Application log is readable by interactive users); Microsoft if WER upload is enabled | Possibly paths in stack traces; a WER report can include a memory snapshot | OS-controlled; disclosed in the README "What stays on your PC" (P6, done) |

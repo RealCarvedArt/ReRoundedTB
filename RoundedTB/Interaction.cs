@@ -178,6 +178,9 @@ namespace RoundedTB
         // Broadcast by Explorer when it (re)creates the taskbar
         public static readonly int TaskbarCreatedMessage = LocalPInvoke.RegisterWindowMessage("TaskbarCreated");
 
+        // The taskbar our tray icon was last added to (the one running at startup, to begin with)
+        private IntPtr trayIconTaskbar = LocalPInvoke.FindWindow("Shell_TrayWnd", null);
+
         public IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             const int WM_HOTKEY = 0x0312;
@@ -203,8 +206,15 @@ namespace RoundedTB
             {
                 try
                 {
-                    mw.trayIcon.Register();
-                    mw.TrayIconCheck();
+                    // Each re-register leaks a hidden WPF-UI window and an icon handle, and any app can broadcast this message,
+                    // so only act when there really is a new taskbar (security review SR6-1)
+                    IntPtr trayWnd = LocalPInvoke.FindWindow("Shell_TrayWnd", null);
+                    if (trayWnd != IntPtr.Zero && trayWnd != trayIconTaskbar)
+                    {
+                        trayIconTaskbar = trayWnd;
+                        mw.trayIcon.Register();
+                        mw.TrayIconCheck();
+                    }
                 }
                 catch (Exception ex)
                 {

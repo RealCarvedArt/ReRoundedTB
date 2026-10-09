@@ -101,6 +101,27 @@ namespace RoundedTB
                     : System.Windows.Media.Color.FromRgb(0x32, 0x80, 0xB1),
                 System.Windows.Media.Color.FromRgb(0x3A, 0x8F, 0xC4),
                 System.Windows.Media.Color.FromRgb(0x47, 0xA8, 0xDA));
+
+            // WPF-UI draws hover and pressed as the accent at 90%/80% opacity, with 70%/50%-opacity text when pressed, which
+            // drops light-mode text to about 4.1:1 and 3.5:1 (UX review, 2026-10-09). Use opaque shades with full-strength text
+            // instead: light 5.71/6.79:1 (white), dark 6.79/7.80:1 (black). High Contrast keeps the system colours.
+            bool light = theme == Wpf.Ui.Appearance.ApplicationTheme.Light;
+            if (light || theme == Wpf.Ui.Appearance.ApplicationTheme.Dark)
+            {
+                System.Windows.Media.Color hover = light ? System.Windows.Media.Color.FromRgb(0x2A, 0x6C, 0x95) : System.Windows.Media.Color.FromRgb(0x4D, 0x9A, 0xCA);
+                System.Windows.Media.Color pressed = light ? System.Windows.Media.Color.FromRgb(0x26, 0x60, 0x85) : System.Windows.Media.Color.FromRgb(0x61, 0xA5, 0xD0);
+                System.Windows.Media.Color text = light ? System.Windows.Media.Colors.White : System.Windows.Media.Colors.Black;
+                ResourceDictionary resources = Current.Resources;
+                resources["AccentFillColorSecondary"] = hover;
+                resources["AccentFillColorSecondaryBrush"] = new System.Windows.Media.SolidColorBrush(hover);
+                resources["AccentFillColorTertiary"] = pressed;
+                resources["AccentFillColorTertiaryBrush"] = new System.Windows.Media.SolidColorBrush(pressed);
+                resources["AccentButtonForegroundPressed"] = new System.Windows.Media.SolidColorBrush(text);
+            }
+            else
+            {
+                Current.Resources.Remove("AccentButtonForegroundPressed");
+            }
         }
     }
 }

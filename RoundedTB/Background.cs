@@ -112,6 +112,7 @@ namespace RoundedTB
                             {
                                 taskbars = RegenerateTaskbars();
                                 Debug.WriteLine("Regenerating taskbar info due to a missing handle");
+                                settleRedraws = 10;
                                 break;
                             }
                             // Get the latest quick details of this taskbar
