@@ -199,7 +199,15 @@ namespace RoundedTB
             const int WM_SETTINGCHANGE = 0x001A;
             if (msg == WM_SETTINGCHANGE)
             {
-                mw.TrayIconCheck();
+                // Cosmetic: a failure here mustn't reach the crash handler and close the app
+                try
+                {
+                    mw.TrayIconCheck();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("TrayIconCheck on WM_SETTINGCHANGE failed: " + ex.GetType().Name);
+                }
             }
 
             switch (msg)

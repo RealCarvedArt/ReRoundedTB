@@ -25,12 +25,12 @@ Gate values: pending, passed (date), failed (date), retroactive (date).
 | M2 unsigned releases | RealCarvedArt | 2026-10-09 | 2027-04-09 | R1 in `docs/security/threat-register.md` |
 
 ## Next action
-Round 4 is done: U15 (no invisible startup window), L-F5, and U12 (visible split-mode help). U11 and U16 were confirmed already fixed. Round 4 isn't runtime-verified yet: the owner's own ReRoundedTB was running, and COMODO contains test builds.
+Round 4 is done: L-F5 and U12 (visible split-mode help), plus the review fixes. U15 was reverted after security review H-1 and is now an accepted minor item. U11 and U16 were confirmed already fixed. Round 4 isn't runtime-verified yet: the owner's own ReRoundedTB was running, and COMODO contains test builds.
 
 Before re-running the phase 7 gate:
-1. Run `docs/release-smoke-test.md` (now 14 checks) on an uncontained build. Checks 2, 13 and 14 cover the round 4 changes.
+1. Run `docs/release-smoke-test.md` (now 16 checks) on an uncontained build. Checks 2 and 13–16 cover the round 4 changes. The CI build of 4f8ae80 passed check 1 (attestation); its runtime run was COMODO-contained.
 2. Light-theme contrast is now smoke-test check 13. It couldn't be measured here (see audit round 4).
-3. An independent reviewer pass on the round 4 diff.
+3. Done: the round 4 reviews (security H-1 led to the U15 revert; the UX lows are fixed).
 
 Still open, not gate-blocking:
 - U5 main-window reflow at 300%+ (known limitation)

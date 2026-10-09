@@ -138,7 +138,7 @@ namespace RoundedTB
                 }
                 shouldReallyDieNoReally = true;
                 isAlreadyRunning = true;
-                // Closing a window from its constructor breaks the startup code that creates it, so exit outright.
+                // Closing a window from its constructor makes StartupUri's Show() throw, so exit outright.
                 // Nothing has been applied to the taskbar yet.
                 Environment.Exit(0);
                 return;
@@ -289,17 +289,28 @@ namespace RoundedTB
             mBottomInput.Text = layout.MarginBottom.ToString();
             mRightInput.Text = layout.MarginRight.ToString();
 
-            // Order matters: the dynamic and fill-on-maximise handlers change the checkboxes after them
-            dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
-            centredCheckBox.IsChecked = activeSettings.IsCentred;
-            showTrayCheckBox.IsChecked = activeSettings.ShowTray;
-            showWidgetsCheckBox.IsChecked = activeSettings.ShowWidgets;
-            fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
-            fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
-            showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
-            compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
+            // Order matters: the dynamic and fill-on-maximise handlers change the checkboxes after them.
+            // Flagged so the "you just ticked this" info boxes don't pop up when Reset loads settings into a visible window.
+            loadingSettingsIntoUi = true;
+            try
+            {
+                dynamicCheckBox.IsChecked = activeSettings.IsDynamic;
+                centredCheckBox.IsChecked = activeSettings.IsCentred;
+                showTrayCheckBox.IsChecked = activeSettings.ShowTray;
+                showWidgetsCheckBox.IsChecked = activeSettings.ShowWidgets;
+                fillMaximisedCheckBox.IsChecked = activeSettings.FillOnMaximise;
+                fillAltTabCheckBox.IsChecked = activeSettings.FillOnTaskSwitch;
+                showSegmentsOnHoverCheckBox.IsChecked = activeSettings.ShowSegmentsOnHover;
+                compositionFixCheckBox.IsChecked = activeSettings.CompositionCompat;
+            }
+            finally
+            {
+                loadingSettingsIntoUi = false;
+            }
             autoHideComboBox.SelectedIndex = activeSettings.AutoHide;
         }
+
+        private bool loadingSettingsIntoUi;
 
         public void UpdateUi()
         {
@@ -911,8 +922,8 @@ namespace RoundedTB
             if (!isWindows11)
             {
                 splitHelpButton.Visibility = Visibility.Visible;
-                // Only when the user ticks it, not while settings load at startup
-                if (IsVisible)
+                // Only when the user ticks it, not while settings load (at startup or on Reset)
+                if (IsVisible && !loadingSettingsIntoUi)
                 {
                     splitHelpButton_Click(null, null);
                 }
@@ -985,12 +996,11 @@ namespace RoundedTB
             Debug.WriteLine(handle);
             Debug.WriteLine((int)Types.KeyModifier.WinKey);
             Debug.WriteLine(System.Windows.Forms.Keys.J.GetHashCode());
-
-            // WPF-UI only registers the tray icon when the window first renders, and this window starts hidden
-            if (!trayIcon.IsRegistered)
-            {
-                trayIcon.Register();
-            }
+            // Shown (at 0.1% opacity) and hidden straight away rather than never shown: WPF only attaches the window's
+            // content on first show, and WPF-UI registers the tray icon from the first render, so a never-shown window
+            // has no tray icon (security review H-1, 2026-10-09)
+            Visibility = Visibility.Hidden;
+            Opacity = 1;
         }
 
         private void splitHelpButton_Click(object sender, RoutedEventArgs e)
@@ -1004,7 +1014,7 @@ namespace RoundedTB
 
         private void compositionFixCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            if (IsVisible)
+            if (IsVisible && !loadingSettingsIntoUi)
             {
                 Infobox ib = new Infobox();
                 ib.Height = 450;
