@@ -130,6 +130,10 @@ namespace RoundedTB
                 resources["AccentButtonForeground"] = new System.Windows.Media.SolidColorBrush(text);
                 resources["AccentButtonForegroundPointerOver"] = new System.Windows.Media.SolidColorBrush(text);
                 resources["AccentButtonForegroundPressed"] = new System.Windows.Media.SolidColorBrush(text);
+                // WPF-UI picks text-on-accent from the brightness of the secondary shade (#3A8FC4: black text), which is wrong
+                // for the darker light-mode fill; pressed accent buttons drew black on #266085 (3.09:1, smoke test)
+                resources["TextOnAccentFillColorPrimary"] = text;
+                resources["TextOnAccentFillColorSecondary"] = text;
             }
             else
             {
