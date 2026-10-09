@@ -78,7 +78,6 @@ namespace RoundedTB
             };
             // WPF applies Windows' suggested size after raising DpiChanged, so fit afterwards (security review SR6-2)
             DpiChanged += (_, _) => Dispatcher.BeginInvoke(FitToWorkArea, DispatcherPriority.Loaded);
-            SetAccentPressedText(applyButton, true);
             normalBackground = Background;
             ApplyContrastMode();
             SystemParameters.StaticPropertyChanged += (_, e) =>
@@ -397,21 +396,6 @@ namespace RoundedTB
             button.ToolTip = $"Edit the {segment.ToLower()} segment{state}";
             System.Windows.Automation.AutomationProperties.SetName(button, $"{segment} segment{state}{(selected ? ", selected" : "")}");
             System.Windows.Automation.AutomationProperties.SetItemStatus(button, selected ? "Selected" : "");
-            SetAccentPressedText(button, selected);
-        }
-
-        // Pressed accent buttons drew black text on the light-mode pressed fill (3.09:1, smoke test) whatever the theme
-        // resources said, so set the pressed text colour on the button itself, which outranks WPF-UI's template triggers
-        private static void SetAccentPressedText(Wpf.Ui.Controls.Button button, bool isAccent)
-        {
-            if (isAccent)
-            {
-                button.SetResourceReference(Wpf.Ui.Controls.Button.PressedForegroundProperty, "AccentButtonForegroundPointerOver");
-            }
-            else
-            {
-                button.ClearValue(Wpf.Ui.Controls.Button.PressedForegroundProperty);
-            }
         }
 
         public void AutoHide(bool enabled, List<Types.Taskbar> taskbarDetails)

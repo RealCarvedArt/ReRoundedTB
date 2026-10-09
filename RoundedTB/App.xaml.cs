@@ -102,14 +102,16 @@ namespace RoundedTB
                 System.Windows.Media.Color.FromRgb(0x3A, 0x8F, 0xC4),
                 System.Windows.Media.Color.FromRgb(0x47, 0xA8, 0xDA));
 
-            // WPF-UI draws hover and pressed as the accent at 90%/80% opacity, with 70%/50%-opacity text when pressed, which
-            // drops light-mode text to about 4.1:1 and 3.5:1 (UX review, 2026-10-09). Use opaque shades with full-strength text
-            // instead: light 5.71/6.79:1 (white), dark 6.79/7.80:1 (black). High Contrast keeps the system colours.
+            // WPF-UI draws hover and pressed as the accent at 90%/80% opacity, which drops light-mode text to about 4.1:1 and
+            // 3.5:1 (UX review, 2026-10-09). Use opaque shades instead. Measured on screen (smoke test): rest and hover text is
+            // white in light mode (4.88, 5.71:1) and black in dark (5.91, 6.79:1), but pressed text is dark in both themes
+            // whatever the resources below say (three builds tried), so the pressed fill is a lighter blue in both
+            // (light 6.79:1, dark 7.80:1 with black). High Contrast keeps the system colours.
             bool light = theme == Wpf.Ui.Appearance.ApplicationTheme.Light;
             if (light || theme == Wpf.Ui.Appearance.ApplicationTheme.Dark)
             {
                 System.Windows.Media.Color hover = light ? System.Windows.Media.Color.FromRgb(0x2A, 0x6C, 0x95) : System.Windows.Media.Color.FromRgb(0x4D, 0x9A, 0xCA);
-                System.Windows.Media.Color pressed = light ? System.Windows.Media.Color.FromRgb(0x26, 0x60, 0x85) : System.Windows.Media.Color.FromRgb(0x61, 0xA5, 0xD0);
+                System.Windows.Media.Color pressed = light ? System.Windows.Media.Color.FromRgb(0x4D, 0x9A, 0xCA) : System.Windows.Media.Color.FromRgb(0x61, 0xA5, 0xD0);
                 System.Windows.Media.Color rest = light ? System.Windows.Media.Color.FromRgb(0x2F, 0x77, 0xA5) : System.Windows.Media.Color.FromRgb(0x3A, 0x8F, 0xC4);
                 System.Windows.Media.Color text = light ? System.Windows.Media.Colors.White : System.Windows.Media.Colors.Black;
                 ResourceDictionary resources = Current.Resources;
@@ -117,9 +119,7 @@ namespace RoundedTB
                 resources["AccentFillColorSecondaryBrush"] = new System.Windows.Media.SolidColorBrush(hover);
                 resources["AccentFillColorTertiary"] = pressed;
                 resources["AccentFillColorTertiaryBrush"] = new System.Windows.Media.SolidColorBrush(pressed);
-                // The accent button's own brushes. Set here (not via the colour keys above) because WPF-UI's theme dictionary
-                // builds the text brushes from colours that don't follow a live theme switch: pressed text measured black on
-                // the light-mode pressed fill (3.09:1). App-level keys win over the theme dictionary and update live.
+                // The accent button's own brushes; app-level keys win over the theme dictionary and update on a live switch
                 foreach (string key in AccentButtonBrushKeys)
                 {
                     resources.Remove(key);
@@ -130,10 +130,6 @@ namespace RoundedTB
                 resources["AccentButtonForeground"] = new System.Windows.Media.SolidColorBrush(text);
                 resources["AccentButtonForegroundPointerOver"] = new System.Windows.Media.SolidColorBrush(text);
                 resources["AccentButtonForegroundPressed"] = new System.Windows.Media.SolidColorBrush(text);
-                // WPF-UI picks text-on-accent from the brightness of the secondary shade (#3A8FC4: black text), which is wrong
-                // for the darker light-mode fill; pressed accent buttons drew black on #266085 (3.09:1, smoke test)
-                resources["TextOnAccentFillColorPrimary"] = text;
-                resources["TextOnAccentFillColorSecondary"] = text;
             }
             else
             {
