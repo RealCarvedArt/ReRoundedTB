@@ -17,6 +17,12 @@
         d:Opacity="1"
         ResizeMode="NoResize"
         >
+    <ui:FluentWindow.Resources>
+        <!-- WPF-UI draws labels in its secondary text colour, which measured about 3:1 in light mode; use the primary text colour -->
+        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </Style>
+    </ui:FluentWindow.Resources>
     <!--169, 393-->
     <Grid x:Name="MainGrid" Margin="0,0,0,0" d:Margin="0,-16,0,0">
         <Grid.RowDefinitions>

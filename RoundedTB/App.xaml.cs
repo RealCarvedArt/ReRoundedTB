@@ -71,10 +71,14 @@ namespace RoundedTB
 
         private static void ApplyBrandAccent(Wpf.Ui.Appearance.ApplicationTheme theme)
         {
-            // Explicit shades from the icon: the single-colour overload lightens the accent heavily in dark mode, washing the blue out
+            // Explicit shades from the icon: the single-colour overload lightens the accent heavily in dark mode, washing the blue out.
+            // Light mode fills accent buttons with the primary shade; the icon blue gives white text only 4.32:1 (measured), so use
+            // a slightly darker blue there (4.88:1)
             Wpf.Ui.Appearance.ApplicationAccentColorManager.Apply(
                 BrandAccent,
-                System.Windows.Media.Color.FromRgb(0x32, 0x80, 0xB1),
+                theme == Wpf.Ui.Appearance.ApplicationTheme.Light
+                    ? System.Windows.Media.Color.FromRgb(0x2F, 0x77, 0xA5)
+                    : System.Windows.Media.Color.FromRgb(0x32, 0x80, 0xB1),
                 System.Windows.Media.Color.FromRgb(0x3A, 0x8F, 0xC4),
                 System.Windows.Media.Color.FromRgb(0x47, 0xA8, 0xDA));
         }

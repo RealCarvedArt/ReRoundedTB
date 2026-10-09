@@ -356,7 +356,7 @@ namespace RoundedTB
         }
 
         // Hidden segments are dimmed; at 0.65 their text measures about 6:1 contrast on the dark theme (0.5 was 4.3:1, under WCAG's 4.5:1)
-        private const double DimmedSegmentOpacity = 0.65;
+        private const double DimmedSegmentOpacity = 0.72; // 0.65 measured 4.43:1 in light mode
 
         // Name each segment button and its state in text, so it isn't conveyed by opacity or colour alone (screen readers, tooltips)
         private void UpdateSegmentLabels()
@@ -795,12 +795,16 @@ namespace RoundedTB
 
         private void CloseMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            // Close any popups - leave main window for now
+            // Close any popups, but not this window: closing it here takes the "hide to tray" path, which shows the one-time
+            // "still running in the tray" notice and holds up the real close below until it's dismissed (smoke test 2026-10-09)
             for (int windowCount = App.Current.Windows.Count - 1; windowCount >= 0; windowCount--)
             {
-                App.Current.Windows[windowCount].Close();
+                if (App.Current.Windows[windowCount] != this)
+                {
+                    App.Current.Windows[windowCount].Close();
+                }
             }
-            
+
             shouldReallyDieNoReally = true;
 
             Close();
