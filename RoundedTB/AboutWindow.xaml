@@ -70,7 +70,7 @@
                 <Expander x:Name="expander2" Header="About advanced options" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock2" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
-                    <Bold>• Dynamic mode (Windows 11)</Bold> - shrinks the taskbar to fit its icons, like a dock. The app list, the system tray and, when the taskbar is centred, the widgets area become separate segments.
+                    <Bold>• Dynamic mode (Windows 11)</Bold> - shrinks the taskbar to fit its icons, like a dock. The app list, the system tray and, when the taskbar is centered, the widgets area become separate segments.
                     <LineBreak/>
                     <Bold>• Split mode (Windows 10)</Bold> - separates the taskbar from the system tray so you can resize it by hand. It needs some setup; turn it on for instructions.
                     <LineBreak/>
@@ -78,7 +78,7 @@
                     <LineBreak/>
                     <Bold>• Show segments only when hovered</Bold> - shows the tray and widgets segments only while the mouse is over them. This uses more CPU.
                     <LineBreak/>
-                    <Bold>• Restore the taskbar when a window is maximised</Bold> - turns the taskbar back to normal on a monitor with a maximised window.
+                    <Bold>• Restore the taskbar when a window is maximized</Bold> - turns the taskbar back to normal on a monitor with a maximized window.
                     <LineBreak/>
                     <Bold>• Restore the taskbar on alt+tab or win+tab (Windows 11)</Bold> - does the same while the task switcher is open.
                     <LineBreak/>

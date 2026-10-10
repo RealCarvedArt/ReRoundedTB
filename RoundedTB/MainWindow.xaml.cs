@@ -220,7 +220,7 @@ namespace RoundedTB
                 $"ShowTrayOnHover: {activeSettings.ShowSegmentsOnHover}\n"
                 );
 
-            // Get whether or not taskbar is centred
+            // Get whether or not taskbar is centered
             try
             {
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"))
@@ -236,7 +236,7 @@ namespace RoundedTB
                         {
                             isCentred = false;
                         }
-                        interaction.AddLog($"Taskbar centred? {isCentred}");
+                        interaction.AddLog($"Taskbar centered? {isCentred}");
                     }
                 }
             }
@@ -378,7 +378,7 @@ namespace RoundedTB
         // Hidden segments are dimmed; at 0.65 their text measures about 6:1 contrast on the dark theme (0.5 was 4.3:1, under WCAG's 4.5:1)
         private const double DimmedSegmentOpacity = 0.72; // 0.65 measured 4.43:1 in light mode
 
-        // Name each segment button and its state in text, so it isn't conveyed by opacity or colour alone (screen readers, tooltips)
+        // Name each segment button and its state in text, so it isn't conveyed by opacity or color alone (screen readers, tooltips)
         private void UpdateSegmentLabels()
         {
             static string SegmentState(bool shown, bool onHover) => !shown ? " (hidden)" : onHover ? " (shown on hover)" : "";
@@ -389,7 +389,7 @@ namespace RoundedTB
 
         private static void SetSegmentLabel(Wpf.Ui.Controls.Button button, string segment, string state)
         {
-            // The selected segment is the Primary (accent-coloured) one; bold text and an item status say so without relying on colour
+            // The selected segment is the Primary (accent-colored) one; bold text and an item status say so without relying on color
             bool selected = button.Appearance == Wpf.Ui.Controls.ControlAppearance.Primary;
             button.Content = segment;
             button.FontWeight = selected ? FontWeights.Bold : FontWeights.Normal;
@@ -490,7 +490,7 @@ namespace RoundedTB
             return key?.GetValue("SystemUsesLightTheme") is int value && value == 1;
         }
 
-        // In High Contrast, drop the translucent backdrop and dimmed text so Windows' contrast colours apply unaltered
+        // In High Contrast, drop the translucent backdrop and dimmed text so Windows' contrast colors apply unaltered
         private void ApplyContrastMode()
         {
             bool highContrast = SystemParameters.HighContrast;
@@ -1077,7 +1077,7 @@ namespace RoundedTB
                 ib.Height = 450;
                 ib.Title = "ReRoundedTB - TranslucentTB compatibility";
                 ib.titleBlock.Text = "Compatibility with TranslucentTB";
-                ib.bodyBlock.Text = "\nTranslucentTB is a utility that allows you to customise the opacity, blur and colour of the taskbar seamlessly with significantly finer control than other tools. Enable this option to allow ReRoundedTB and TranslucentTB to work together.\n\nThis is necessary due to a bug in Windows (it's not the fault of RoundedTB or TranslucentTB), and you might encounter some minor flickering when the taskbar \"updates\" (changes size, roundness or position). This is usually minimal, but if it bothers you, use either ReRoundedTB or TranslucentTB on its own.\n\nTranslucentTB is the original aesthetic taskbar mod for Windows 10 and the project that inspired RoundedTB. Go check it out!";
+                ib.bodyBlock.Text = "\nTranslucentTB is a utility that allows you to customize the opacity, blur and color of the taskbar seamlessly with significantly finer control than other tools. Enable this option to allow ReRoundedTB and TranslucentTB to work together.\n\nThis is necessary due to a bug in Windows (it's not the fault of RoundedTB or TranslucentTB), and you might encounter some minor flickering when the taskbar \"updates\" (changes size, roundness or position). This is usually minimal, but if it bothers you, use either ReRoundedTB or TranslucentTB on its own.\n\nTranslucentTB is the original aesthetic taskbar mod for Windows 10 and the project that inspired RoundedTB. Go check it out!";
                 ib.ShowDialog();
             }
         }

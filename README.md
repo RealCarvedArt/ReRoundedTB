@@ -32,10 +32,10 @@ The preview at the top of the settings window shows your taskbar's segments. Cli
 Without dynamic mode, the whole taskbar is a single segment.
 
 ### Advanced options
-- **Dynamic mode (Windows 11)** - shrinks the taskbar to fit its icons, a bit like the macOS Dock. The app list and the system tray become separate segments. When the taskbar is centred, there's also a widgets segment on the far left, where Windows puts its Widgets button; it's only useful if Widgets is turned on in Windows' taskbar settings. Each segment has its own corner radius and margins.
+- **Dynamic mode (Windows 11)** - shrinks the taskbar to fit its icons, a bit like the macOS Dock. The app list and the system tray become separate segments. When the taskbar is centered, there's also a widgets segment on the far left, where Windows puts its Widgets button; it's only useful if Widgets is turned on in Windows' taskbar settings. Each segment has its own corner radius and margins.
 - **Show this segment** - shown when the tray or widgets segment is selected; shows or hides that segment in dynamic mode. Press <kbd>Win</kbd>+<kbd>F2</kbd> at any time to toggle the tray.
 - **Show segments only when hovered over with the mouse** - shows the tray and widgets segments only while the mouse is over them. This uses more CPU.
-- **When a window is maximised, restore the taskbar** - turns the taskbar back to normal on any monitor with a maximised window.
+- **When a window is maximized, restore the taskbar** - turns the taskbar back to normal on any monitor with a maximized window.
 - **When alt+tab or win+tab is pressed, restore the taskbar (Windows 11)** - does the same while the task switcher is open. Needs the option above.
 - **Improve compatibility with TranslucentTB and other mods** - lets ReRoundedTB work alongside [TranslucentTB](https://github.com/TranslucentTB/TranslucentTB). Due to a bug in Windows, apps that change the taskbar's composition stop ReRoundedTB's changes from showing up; this asks TranslucentTB to refresh the taskbar after each change. It may flicker slightly. RoundedTB's author built this with [Sylveon](https://github.com/sylveon) of TranslucentTB for TranslucentTB 2021.5; newer versions haven't been tested.
 - **Split mode (Windows 10)** - replaces dynamic mode on Windows 10. It separates the taskbar from the system tray so you can resize it by hand; see [Configuring split mode on Windows 10](#configuring-split-mode-on-windows-10).
@@ -100,9 +100,9 @@ This program will not transfer any information to other networked systems unless
 What stays on your PC:
 - `%LOCALAPPDATA%\rtb.json` holds your settings (margins, corner radius and options; nothing personal). A `rtb.json.tmp` may be left beside it if the PC loses power mid-save.
 - With **Run at startup** on, a `ReRoundedTB.lnk` shortcut in your Startup folder.
-- To find taskbars, maximised windows and the task switcher, ReRoundedTB looks at other windows' class names, positions and states while it runs. It doesn't read their titles or contents, and stores none of it.
+- To find taskbars, maximized windows and the task switcher, ReRoundedTB looks at other windows' class names, positions and states while it runs. It doesn't read their titles or contents, and stores none of it.
 - It has no telemetry, update check or network code. The only links it opens are the GitHub pages in its Help window, and only when you click them.
 - If ReRoundedTB crashes, Windows may log it and, if you've turned on Windows error reporting, send a report to Microsoft (it can include file paths and a snapshot of memory). You control this in Windows' privacy settings; ReRoundedTB itself sends nothing.
 
-## Credits and licence
+## Credits and license
 ReRoundedTB is based on [RoundedTB](https://github.com/torchgm/RoundedTB), created by torchgm. Parts of this README are adapted from RoundedTB's documentation. Like RoundedTB, ReRoundedTB is free software under the [GNU General Public License v3.0](LICENSE).

@@ -28,7 +28,7 @@ namespace RoundedTB
             // Single source of truth: <Version> in RoundedTB.csproj
             subtitleBlock.Text = "Version " + typeof(AboutWindow).Assembly.GetName().Version.ToString(3);
 
-            // In High Contrast, drop the translucent backdrop and dimmed text so Windows' contrast colours apply unaltered
+            // In High Contrast, drop the translucent backdrop and dimmed text so Windows' contrast colors apply unaltered
             if (SystemParameters.HighContrast)
             {
                 Background = SystemColors.WindowBrush;

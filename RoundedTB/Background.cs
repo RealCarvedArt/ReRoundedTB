@@ -79,7 +79,7 @@ namespace RoundedTB
                             infrequentCount = 0;
                         }
 
-                        // Check if the taskbar is centred, and if it is, directly update the settings; using an interim bool to avoid delaying because I'm lazy
+                        // Check if the taskbar is centered, and if it is, directly update the settings; using an interim bool to avoid delaying because I'm lazy
                         bool isCentred = Taskbar.CheckIfCentred(mw.activeSettings.IsWindows11);
                         mw.activeSettings.IsCentred = isCentred;
 
@@ -119,7 +119,7 @@ namespace RoundedTB
                             Types.Taskbar newTaskbar = Taskbar.GetQuickTaskbarRects(taskbars[current].TaskbarHwnd, taskbars[current].TrayHwnd, taskbars[current].AppListHwnd);
 
 
-                            // If the taskbar's monitor has a maximised window, reset it so it's "filled"
+                            // If the taskbar's monitor has a maximized window, reset it so it's "filled"
                             if (Taskbar.TaskbarShouldBeFilled(taskbars[current].TaskbarHwnd, settings))
                             {
                                 if (taskbars[current].Ignored == false)

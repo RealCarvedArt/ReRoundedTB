@@ -13,8 +13,8 @@ ReRoundedTB keeps everything on the device. It has no telemetry, no update check
 | Log file | removed | No longer created (P3 fixed). Older versions left an empty `%LOCALAPPDATA%\rtb.log` | n/a | n/a | n/a | No | No |
 | Startup shortcut (opt-in) | `MainWindow.xaml.cs:613-663` | Run at logon | `%APPDATA%\...\Startup\ReRoundedTB.lnk` | Until toggled off | User, admins | Target path may include the username | Yes |
 | Registry read: `CurrentBuild` (HKLM) | `MainWindow.xaml.cs:65-66` | Detect Windows 10 or 11 | Memory | Process lifetime | Process | No | Yes |
-| Registry read: `TaskbarAl` (HKCU) | `MainWindow.xaml.cs:250-254`, `Taskbar.cs:136-141` | Detect centred taskbar | Memory (and copied into rtb.json) | Process lifetime | Process | No | Yes |
-| Other apps' window class names, positions and states | `Taskbar.cs` (maximised / task-switcher checks) | Detect maximised windows and the task switcher | Memory only, discarded immediately | Milliseconds | Process | No; other apps' titles are not read (P2 fixed) | Yes |
+| Registry read: `TaskbarAl` (HKCU) | `MainWindow.xaml.cs:250-254`, `Taskbar.cs:136-141` | Detect centered taskbar | Memory (and copied into rtb.json) | Process lifetime | Process | No | Yes |
+| Other apps' window class names, positions and states | `Taskbar.cs` (maximized / task-switcher checks) | Detect maximized windows and the task switcher | Memory only, discarded immediately | Milliseconds | Process | No; other apps' titles are not read (P2 fixed) | Yes |
 | ReRoundedTB's own window title | `Background.cs:50`; `MainWindow.xaml.cs` second-launch path (only windows whose class is ReRoundedTB's) | "Show settings" request from older versions; newer launches use a broadcast window message | Memory | Milliseconds | Process | No | Yes |
 | Process names | `MainWindow.xaml.cs:84,115` | Single instance; detect upstream RoundedTB | Memory | Milliseconds | Process | No | Yes |
 | Cursor position | `Background.cs` (hover and auto-hide checks) | Hover segments and auto-hide | Memory | Milliseconds | Process | No | Yes (when enabled) |

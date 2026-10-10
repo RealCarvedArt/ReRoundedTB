@@ -123,10 +123,10 @@ namespace RoundedTB
         }
 
         /// <summary>
-        /// Checks if the taskbar is centred.
+        /// Checks if the taskbar is centered.
         /// </summary>
         /// <returns>
-        /// A bool indicating if the taskbar is centred.
+        /// A bool indicating if the taskbar is centered.
         /// </returns>
         public static bool CheckIfCentred(bool isWindows11)
         {
@@ -137,7 +137,7 @@ namespace RoundedTB
                 {
                     if (key != null)
                     {
-                        // TaskbarAl is absent until the user changes alignment; Windows 11 defaults to centred
+                        // TaskbarAl is absent until the user changes alignment; Windows 11 defaults to centered
                         int val = (int)key.GetValue("TaskbarAl", isWindows11 ? 1 : 0);
 
                         if (val == 1)
@@ -361,7 +361,7 @@ namespace RoundedTB
                     centredDistanceFromEdge -= Convert.ToInt32(20 * taskbar.ScaleFactor);
                 }
 
-                // Create region for if the taskbar is centred by take the right-to-right distance (centredDistanceFromEdge) off from both sides, as well as the margin
+                // Create region for if the taskbar is centered by take the right-to-right distance (centredDistanceFromEdge) off from both sides, as well as the margin
                 if (settings.IsCentred)
                 {
                     mainRegion = LocalPInvoke.CreateRoundRectRgn(

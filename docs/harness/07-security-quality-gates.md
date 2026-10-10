@@ -49,7 +49,7 @@ The threat model is a same-user, medium-integrity desktop tool. The app runs asI
 
 The gate requires zero open critical/high findings, which is met. It also requires that mediums have owners and dates; they are assigned to the repo owner with a 2026-11-09 due date, pending the owner's confirmation.
 
-The gate fails on missing controls rather than on findings. There is no SAST, no SBOM, no secret scanning in CI, and the ASVS target is undefined. A gate cannot be "green" when the checks that produce its colour are not running.
+The gate fails on missing controls rather than on findings. There is no SAST, no SBOM, no secret scanning in CI, and the ASVS target is undefined. A gate cannot be "green" when the checks that produce its color are not running.
 
 DAST and security headers do not apply to a desktop binary. The desktop equivalents are listed in the audit: BinSkim, Authenticode, pinned attestation verification, a malformed-settings corpus, and Explorer-restart and crash-recovery tests. These are adopted as the replacement gate items, rather than marking the web items as passed.
 

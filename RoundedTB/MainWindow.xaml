@@ -18,7 +18,7 @@
         ResizeMode="NoResize"
         >
     <ui:FluentWindow.Resources>
-        <!-- WPF-UI draws labels in its secondary text colour, which measured about 3:1 in light mode; use the primary text colour -->
+        <!-- WPF-UI draws labels in its secondary text color, which measured about 3:1 in light mode; use the primary text color -->
         <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
         </Style>
@@ -71,11 +71,11 @@
             <CheckBox x:Name="showTrayCheckBox" TabIndex="5" Content="Show this segment" Margin="0,210,44,0" VerticalAlignment="Top" HorizontalAlignment="Right" Visibility="Hidden"/>
             <CheckBox x:Name="showWidgetsCheckBox" TabIndex="6" Content="Show this segment" Margin="0,210,44,0" VerticalAlignment="Top" HorizontalAlignment="Right" Visibility="Hidden"/>
 
-            <CheckBox x:Name="centredCheckBox" Content="Centred taskbar?" Margin="10,62,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
+            <CheckBox x:Name="centredCheckBox" Content="Centered taskbar?" Margin="10,62,0,0" VerticalAlignment="Top" Visibility="Hidden"/>
 
             <Grid KeyboardNavigation.TabIndex="7" KeyboardNavigation.TabNavigation="Local" Width="555" Margin="15,0,0,4" HorizontalAlignment="Left" Height="124" VerticalAlignment="Bottom">
                 <CheckBox x:Name="showSegmentsOnHoverCheckBox" TabIndex="13" Content="Show the tray and widgets only when the mouse is over them (uses more CPU)" Margin="0,0,0,0" VerticalAlignment="Top" Checked="showSegmentsOnHoverCheckBox_Checked" Unchecked="showSegmentsOnHoverCheckBox_Unchecked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
-                <CheckBox x:Name="fillMaximisedCheckBox" TabIndex="14" Content="When a window is maximised, restore the taskbar" Margin="0,30,0,0" Checked="fillMaximisedCheckBox_Checked"  Unchecked="fillMaximisedCheckBox_Unchecked"  VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
+                <CheckBox x:Name="fillMaximisedCheckBox" TabIndex="14" Content="When a window is maximized, restore the taskbar" Margin="0,30,0,0" Checked="fillMaximisedCheckBox_Checked"  Unchecked="fillMaximisedCheckBox_Unchecked"  VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
                 <CheckBox x:Name="fillAltTabCheckBox" TabIndex="15" Content="When alt+tab or win+tab is pressed, restore the taskbar" Margin="0,60,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment"/>
                 <CheckBox x:Name="compositionFixCheckBox" TabIndex="16" Content="Improve compatibility with TranslucentTB and other mods (may cause flickering)" Margin="0,90,0,0" VerticalAlignment="Top" IsChecked="False" Checked="compositionFixCheckBox_Checked" HorizontalAlignment="Left" d:LayoutOverrides="HorizontalAlignment, VerticalAlignment"/>
             </Grid>

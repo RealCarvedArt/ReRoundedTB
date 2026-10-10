@@ -13,7 +13,7 @@ namespace RoundedTB
     /// </summary>
     public partial class App : Application
     {
-        // Brand blue from the app icon. Used instead of the Windows accent colour so the UI matches the icon and banner.
+        // Brand blue from the app icon. Used instead of the Windows accent color so the UI matches the icon and banner.
         public static readonly System.Windows.Media.Color BrandAccent = System.Windows.Media.Color.FromRgb(0x32, 0x80, 0xB1);
 
         private static int crashHandled;
@@ -91,7 +91,7 @@ namespace RoundedTB
 
         private static void ApplyBrandAccent(Wpf.Ui.Appearance.ApplicationTheme theme)
         {
-            // Explicit shades from the icon: the single-colour overload lightens the accent heavily in dark mode, washing the blue out.
+            // Explicit shades from the icon: the single-color overload lightens the accent heavily in dark mode, washing the blue out.
             // Light mode fills accent buttons with the primary shade; the icon blue gives white text only 4.32:1 (measured), so use
             // a slightly darker blue there (4.88:1)
             Wpf.Ui.Appearance.ApplicationAccentColorManager.Apply(
@@ -106,7 +106,7 @@ namespace RoundedTB
             // 3.5:1 (UX review, 2026-10-09). Use opaque shades instead. Measured on screen (smoke test): rest and hover text is
             // white in light mode (4.88, 5.71:1) and black in dark (5.91, 6.79:1), but pressed text is dark in both themes
             // whatever the resources below say (three builds tried), so the pressed fill is a lighter blue in both
-            // (light 6.79:1, dark 7.80:1 with black). High Contrast keeps the system colours.
+            // (light 6.79:1, dark 7.80:1 with black). High Contrast keeps the system colors.
             bool light = theme == Wpf.Ui.Appearance.ApplicationTheme.Light;
             if (light || theme == Wpf.Ui.Appearance.ApplicationTheme.Dark)
             {
