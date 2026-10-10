@@ -36,6 +36,8 @@
                 <Expander x:Name="expander0" Header="What's new" HorizontalAlignment="Center" VerticalAlignment="Top" Width="480" FontSize="16" FontFamily="Segoe UI Semibold">
                     <Grid>
                         <TextBlock Margin="0,5,0,0" x:Name="bodyBlock0" TextWrapping="Wrap" FontWeight="Normal" FontFamily="Segoe UI" FontSize="14" Opacity="0.8" LineHeight="23">
+                    <Bold>• 3.7.3:</Bold> clicking Apply no longer moves keyboard focus to the taskbar; US spelling throughout.
+                    <LineBreak/>
                     <Bold>• 3.7.2:</Bold> Pause and Reset in the tray menu; the tray icon comes back after Explorer restarts; full keyboard and screen-reader support, and readable contrast in light and dark mode.
                     <LineBreak/>
                     <Bold>• 3.7.1:</Bold> dynamic mode no longer gets stuck showing only a few icons after Windows rebuilds the taskbar (e.g. after sleep or a display change).

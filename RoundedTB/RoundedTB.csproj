@@ -17,7 +17,7 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <Version>3.7.2</Version>
+    <Version>3.7.3</Version>
     <!-- Code signing requires every version attribute to carry the same value, so derive them all from <Version> -->
     <AssemblyVersion>$(Version).0</AssemblyVersion>
     <FileVersion>$(Version).0</FileVersion>
