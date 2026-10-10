@@ -30,6 +30,8 @@ Passed. The security review of rounds 5-6 passed (no Critical/High/Medium). The 
 ## Deployment note
 The owner asked for a v3.7.2 release after the fixes. The harness wants a passed phase 9 gate and a rehearsed rollback first. Phase 8 (performance) and phase 9 (staging/QA) were not formally run. The 2026-10-09 release smoke test on CI builds is the QA evidence, and v3.7.1 stays downloadable as the rollback.
 
+The release was first built from `c75f683` (CI run 37996207270, zip SHA-256 `828DA976…D7A7`). Later the same day, at the owner's request, the `v3.7.2` tag was moved to `5836ade` and the zip replaced with the build from CI run 38009790575 (zip SHA-256 `9E306356501EA11088FE4FBC97AE0899F78ECEACCC59C47312D79444FCD31158`). That commit only changes UI text, README and docs to US spelling (centered, color, maximized, customize, license). The exe is unchanged (`8892892A…DEAD`), so antivirus trust carries over. The new zip's attestation and hash were checked after downloading it from the release. That build has not been run locally.
+
 ## Next action
 - Run smoke check 12 (crash, debug build) and 16 (Windows 10), plus High Contrast and Narrator passes.
 - Phase 8 if performance matters (the worker polls every 100 ms).
