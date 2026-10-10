@@ -34,6 +34,8 @@ The release was first built from `c75f683` (CI run 37996207270, zip SHA-256 `828
 
 v3.7.3 was released on 2026-10-10 at the owner's request with that fix: tag `v3.7.3` on `cecd270` (version bump and "What's new" line on top of `31ec3ed`), CI run 38049167468 (22 tests passed), zip SHA-256 `E1DBDDFFCF785CCC963284D70C81C68D101B66F92E61F68F35E575B949826207`, exe `4306A583B77229E6906F59239CBCFC0B7183E2F9F7D55F86DD63E7044B98FA03`. The published zip's hash and attestation were checked after downloading it. The fix was runtime-verified on the `31ec3ed` CI build. The 3.7.3 exe itself has a new hash and was not run here. Rollback: v3.7.2.
 
+Later on 2026-10-10, at the owner's request, the `v3.7.3` tag was moved to `9b82d7f` (a shorter "What's new" in the About window) and the zip replaced with the build from CI run 38073473997 (zip SHA-256 `F517C840E1176DE72277F72F8AF692723D218D3A10ECF0880F2763D2CE259CA4`). The exe is unchanged (`4306A583…FA03`). The new text was checked on screen using the trusted 3.7.3 exe with a local build of the dll; the published zip's hash and attestation were checked after downloading it.
+
 ## Next action
 - Run smoke check 12 (crash, debug build) and 16 (Windows 10), plus High Contrast and Narrator passes.
 - Phase 8 if performance matters (the worker polls every 100 ms).
